@@ -48,7 +48,3 @@ rnd.shuffle(deck)
 print("Shuffled deck:")
 print('\n')
 [print(card.name, card.suit, card.value) for card in deck]
-
-
-
-"comment"
