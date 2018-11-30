@@ -69,9 +69,9 @@ def divideCards():
             handPlayer4.append(shuffledDeck[cardIndex])
 
 # A player can request his hand from the deck using this function
-# Given argument starts counting from 0.
+
 def handOutCards(playerNumber):
-    return dividedCards[playerNumber]
+    return dividedCards[playerNumber - 1]
 
 divideCards()
 print("Done")
