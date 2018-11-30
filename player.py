@@ -3,6 +3,7 @@
 #
 #
 import random as rnd
+import deck
 
 class Player:
 
@@ -13,14 +14,16 @@ class Player:
         self.position = number
 
     #requests a hand of cards taken from the deck object
-    def requestHand(self, #deck object):
-        self.hand = #some deck method to hand out the cards
+    def requestHand(self):
+        self.hand = []
+        self.hand = deck.handOutCards(self.position)
+        deck.divideCards()
                     
 
     # method to play a card from the hand.
     # in this version, the player just plays a random card 
     def play(self):
-        rnd.randrange(1,len(self.hand)) #chooses a random card
+        i = rnd.randrange(0,len(self.hand)) #chooses a random card
         played = self.hand.pop(i)       #plays chosen the card
         return played
 
