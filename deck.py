@@ -70,8 +70,9 @@ def divideCards():
     
 # A player can request his hand from the deck using this function
 
-def handOutCards(playerNumber):
-    return dividedCards[playerNumber - 1]
+
+def handOutCards(cardSlice):
+    return dividedCards[cardSlice]
 
 #the divideCards() function is called directly in player.py
 

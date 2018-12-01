@@ -7,17 +7,19 @@ import deck
 
 class Player:
 
-    # player 4 is the dealer; player 1 receives the first card, and is
-    # the one who starts the game.
-    # player 1 and 3 are in team 1; player 2 and 4 are in team 2 
-    def __init__(self, number):  
+    # player 0 and 2 are in team 0; player 1 and 3 are in team 1 
+    def __init__(self, number):  #number is an integer from 0 to 3
         self.position = number
+        self.hand = []
 
     #requests a hand of cards taken from the deck object
-    def requestHand(self):
-        self.hand = []
-        self.hand = deck.handOutCards(self.position)
-        deck.divideCards()
+    #Only valid if the dealer is player 4
+    #this method is obsolete; all cards are dealt at the same time
+    #with the method table.dealCards()
+    ##def requestHand(self):
+    ##    self.hand = []
+    ##    self.hand = deck.handOutCards(self.position)
+    ##    deck.divideCards()
                     
 
     # method to play a card from the hand.
