@@ -28,6 +28,7 @@ class Player:
         i = rnd.randrange(0,len(self.hand)) #chooses a random card
         played = self.hand.pop(i)       #plays chosen the card
         return played
+    
 
     
         
