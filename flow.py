@@ -14,24 +14,28 @@
 
 import table
 import deck
+import random as rnd
 
-t = table.Table(1)
+t = table.Table(1,'Rotterdam')
+d = deck.Deck()
 print('\nRound ', t.nRound)
 print('PlayerIDs ', t.playerID)
 print('cycleIDs ', t.cycleID)
 print('Players ', t.players)
 print('Dealer ', t.dealer)
 print('Ordered players ', t.orderedPlayers)   
-print('First player ', t.whoPlays())
+print('First player ', t.WhoPlays())
 
-deck.divideCards()
-print('Divided cards ', deck.dividedCards)
+d.SetTrump(rnd.choice(d.suits))       #randomly chosen trump
+d.DivideCards()
+print('Divided cards ', d.dividedCards)
 
-t.dealCards()
+t.DealCards(d)
 [print('Hand ', p.hand) for p in t.players]
 
 #very simple routine in which only the values count, with no other rules
 while t.players[0].hand != []:
-    a = t.playCards()
-    [print('Played Cards ', a)]
-    print('Winner card ', t.whoWinsTable())
+    t.PlayCards()
+    tmp = t.playedTuples           #to check if WhoWinsTrick works
+    print('Played Cards ', tmp)
+    print('Winner card ', t.WhoWinsTrick().CardAsTuple())

@@ -1,9 +1,14 @@
-#
+
 #Class that represents players
 #
+#I am implementing Rotterdam rules because they seem easier according
+#to this link https://www.pagat.com/jass/klaverjassen.html
+#We should then implement Amsterdam rules as well, switching between
+#the rules with the table.Table variable self.rules
 #
 import random as rnd
 import deck
+import table
 
 class Player:
 
@@ -11,22 +16,23 @@ class Player:
     def __init__(self, number):  #number is an integer from 0 to 3
         self.position = number
         self.hand = []
-
-    #requests a hand of cards taken from the deck object
-    #Only valid if the dealer is player 4
-    #this method is obsolete; all cards are dealt at the same time
-    #with the method table.dealCards()
-    ##def requestHand(self):
-    ##    self.hand = []
-    ##    self.hand = deck.handOutCards(self.position)
-    ##    deck.divideCards()
                     
 
     # method to play a card from the hand.
     # in this version, the player just plays a random card 
-    def play(self):
-        i = rnd.randrange(0,len(self.hand)) #chooses a random card
-        played = self.hand.pop(i)       #plays chosen the card
+    def Play(self, tab):  #tab is the table object for the rules
+        
+       # if tab.WhoPlays()[1] == self:       #check if he's the first to play
+        cardID = rnd.randrange(len(self.hand))
+        played = self.hand.pop(cardID)
+        
+       # else:
+        #    if tab.rules == 'Rotterdam':
+         #       
+          #  elif tab.rules == 'Amsterdam':
+           #     pass
+            #else:
+             #   print('Unknown rules. Input either Amsterdam or Rotterdam')
         return played
     
 

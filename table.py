@@ -12,51 +12,52 @@ import random as rnd
 
 class Table:
 
-    def __init__(self, r):
-        self.nRound   = r              #a game is made of 16 rounds
+    def __init__(self, Round, rules):     #rules is either 'Amsterdam' or 'Rotterdam'. So far only Rotterdam rules implemented
+        self.nRound   = Round             #a game is made of 16 rounds
         self.playerID = 0,1,2,3      #the tuple's index is the player's name - 1
         self.cycleID = self.playerID * 2    #useful to cycle from player 4 to 1
         self.players  =[player.Player(i) for i in self.playerID]
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
-        self.order()
+        self.rules = rules
+        self.Order()
 
 
-    def order(self):
+    def Order(self):
         self.orderedPlayers = [self.players[self.cycleID[self.dealer + i + 1]] for i in range(len(self.playerID))]
         
-    def whoDeals(self):
+    def WhoDeals(self):
         if self.dealer == len(self.playerID) - 1:
             self.dealer = 0
-            self.order()
+            self.Order()
             return self.dealer, self.players[self.dealer]
         else:
             self.dealer += 1
-            self.order()
+            self.Order()
             return self.dealer, self.players[self.dealer]
 
-    def whoPlays(self):
+    def WhoPlays(self):
         p0   = self.orderedPlayers[0]
         p0ID = self.players.index(p0) 
         return p0ID, p0
 
-    def dealCards(self):
+    def DealCards(self, d):   #d is the deck instance object
         [p.hand.clear() for p in self.players]
         for p in self.orderedPlayers:
-            p.hand = deck.handOutCards(self.orderedPlayers.index(p))
+            p.hand = d.HandOutCards(self.orderedPlayers.index(p))
         
-    def playCards(self):
+    def PlayCards(self):
         #the rules are going to be implemented in Player.play()
         #this function is going to stay more or less the same
-        self.playedCards = [p.play() for p in self.orderedPlayers]
-        return self.playedCards
+        self.playedCards = [p.Play(self) for p in self.orderedPlayers]
+        self.playedTuples = [c.CardAsTuple() for c in self.playedCards] #to check if the algorithm works on the command line
     
-    def whoWinsTable(self):
+    def WhoWinsTrick(self):
         #this will have to be changed according to the rules
-        winValue = self.playedCards[0][2]     #the value of the winning card
+        winValue = self.playedCards[0].value     #the value of the winning card
         winner   = self.playedCards[0]        #the winning card        
         for c in self.playedCards:
-            if c[2] > winValue:
-                winValue = c[2]
+            if c.value > winValue:
+                winValue = c.value
                 winner = c
         #TODO:add the points to the team's score
         return winner
