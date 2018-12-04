@@ -16,26 +16,32 @@ import table
 import deck
 import random as rnd
 
-t = table.Table(1,'Rotterdam')
+t = table.Table(1,'Simple')
 d = deck.Deck()
-print('\nRound ', t.nRound)
-print('PlayerIDs ', t.playerID)
-print('cycleIDs ', t.cycleID)
-print('Players ', t.players)
+##print('\nRound ', t.nRound) 
+##print('PlayerIDs ', t.playerID)
+##print('cycleIDs ', t.cycleID)
+##print('Players ', t.players)
 print('Dealer ', t.dealer)
-print('Ordered players ', t.orderedPlayers)   
-print('First player ', t.WhoPlays())
+##print('Ordered players ', t.orderedPlayers)   
+print('First player ', t.WhoPlays()[0])
 
 d.SetTrump(rnd.choice(d.suits))       #randomly chosen trump
-d.DivideCards()
-print('Divided cards ', d.dividedCards)
+d.DivideCards()                
+##print('Divided cards', d.dividedCards)   ##method works
+print('Trump suit', d.trumpSuit)
+
 
 t.DealCards(d)
-[print('Hand ', p.hand) for p in t.players]
+h = [p.hand for p in t.players]
+for i in (0,1,2,3):
+    ht = [c.CardAsTuple() for c in h[i]]
+    print('Hand', i, ht)
 
 #very simple routine in which only the values count, with no other rules
 while t.players[0].hand != []:
-    t.PlayCards()
+    t.PlayCards(d)
     tmp = t.playedTuples           #to check if WhoWinsTrick works
-    print('Played Cards ', tmp)
-    print('Winner card ', t.WhoWinsTrick().CardAsTuple())
+    print('Played Cards', tmp)
+    print('Winner player', t.WhoWinsTrick(d).position)
+    print('Scores', t.roundScore)

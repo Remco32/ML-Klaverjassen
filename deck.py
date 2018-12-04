@@ -1,19 +1,6 @@
-# Complete deck including trump and shuffle routine.
-#
-#
+# Complete deck
 
 import random as rnd
-
-# OBSOLETE dictionary for the deck including suit, names and values
-#deckDict = {
-#    'd': {'K': 4, 'Q': 3, 'J': 2, '10': 10, '9': 0, '8': 0, '7': 0, 'A': 11},
-#    'c': {'K': 4, 'Q': 3, 'J': 2, '10': 10, '9': 0, '8': 0, '7': 0, 'A': 11},
-#    'h': {'K': 4, 'Q': 3, 'J': 2, '10': 10, '9': 0, '8': 0, '7': 0, 'A': 11},
-#    's': {'K': 4, 'Q': 3, 'J': 2, '10': 10, '9': 0, '8': 0, '7': 0, 'A': 11}
-#    }
-
-
-
 
 
 # class to represent a card in the game
@@ -41,25 +28,22 @@ class Deck:
 
     def __init__(self):   #create a trumpless deck with Klaverjassen cards
         self.cards = [Card(n, s,  self.nonTrumpDict[n]) for s in self.suits for n in self.nonTrumpDict.keys() ]
-        # To save the divided cards for each players after shuffling, but
-        # before handing the cards over to the player
         self.dividedCards = self.handP0, self.handP1, self.handP2, self.handP3 = [], [], [], []
 
     def SetTrump(self, trumpSuit):  #set the trump values
         self.cards = []
         self.__init__()
-        [c.SetValue(self.trumpDict[n]) for c in self.cards for n in self.trumpDict.keys() if c.name == n if c.suit == trumpSuit]
+        self.trumpSuit = trumpSuit
+        [c.SetValue(self.trumpDict[n]) for c in self.cards for n in self.trumpDict.keys() if c.name == n if c.suit == self.trumpSuit]
         
     # Split the shuffled deck in four parts, so each player can receive their hand
     def DivideCards(self):
-    
         #the hands need to be emptied beforehand, otherwise cards will be
         #added indefinitely; then the cards need to be shuffled again
         rnd.shuffle(self.cards)
-        shuffledDeck = [card for card in self.cards]   #major change: now the shuffled deck is not a collection of tuples, but of cards
+        shuffledDeck = [card for card in self.cards]  ##MAJOR CHANGE: now the shuffled deck is not a collection of tuples, but of cards
         [self.dividedCards[i].clear() for i in range(4)]
 
-        # Each player will receive 32/4=8 cards
         for cardIndex in range(len(shuffledDeck)):
             if cardIndex >= 0 and cardIndex <= 7:
                 self.handP0.append(shuffledDeck[cardIndex])
@@ -71,5 +55,5 @@ class Deck:
                 self.handP3.append(shuffledDeck[cardIndex])
 
     # A player can request his hand from the deck using this function
-    def HandOutCards(self, cardSlice):
-        return self.dividedCards[cardSlice]
+    def HandOutCards(self, playerPosition):    
+        return self.dividedCards[playerPosition]

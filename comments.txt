@@ -12,8 +12,10 @@ In table.py:
 
 
 What needs to be done next:
-     - correctly implement the trump suit (randomly decided at the start?)
      - implement the points
-     - implement the rules for what cards are allowed to be played
-     - implement the rules for what card wins on the table
+     - IMPORTANT: WHAT IS THE RULE IF AN 8 AND A 7 OF TRUMP ARE
+     PLAYED, AND NO OTHER TRUMPS? they boty have 0 value (this is only
+     valid in the 'simple' rules, and since they are made up, but a
+     good check for the functionalities, it could be good to have a
+     strategy for that situation)
      
