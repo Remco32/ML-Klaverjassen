@@ -31,20 +31,24 @@ class Player:
         else:
             self.team = 1
 
-    def InHand(self, suit):
-        self.subHand = [c for c in self.hand if c.suit == suit]   #build a subhand for the passed suit
-        if self.subHand != []:
-            return True
-        else:
-            return False
+        
+    def Pop(self):
+        self.subHand = [c for c in self.hand if c.isPlayable == True]
+        popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
+        self.hand.remove(popped)
+        return popped
 
+        
     # method to play a card from the hand.
     def Play(self, tab, d):  #tab is the table object for the rules, d is the deck object for the trump suit
         
-        if tab.WhoPlays()[1] == self:       #check if he's the first to play
-            cardID = rnd.randrange(0, len(self.hand))   ###
-            self.played = self.hand.pop(cardID)
-        
+        if tab.WhoPlays()[0] == self:    #if he's starting the trick
+            for c in self.hand:
+                c.isPlayable = True
+            self.played = self.Pop()
+            for c in self.hand:
+                c.isPlayable = False
+                        
         else:
             if tab.rules == 'Simple':
                 self.SimplePlay(tab, d)
@@ -53,22 +57,43 @@ class Player:
             elif tab.rules == 'Amsterdam':
                 self.AmsterdamPlay(tab, d)
             else:
-                print('Unknown rules. Input either Amsterdam or Rotterdam')
-        return self.played
+                print('Unknown rules. Input either \'Simple\', \'Amsterdam\' or \'Rotterdam\'')
+        return self.played             #self.played is assigned within each of the play methods below
     
     def SimplePlay(self, tab, d):
-         if self.InHand(tab.leadingSuit) == True:             #play in suit if possible
-             cardID = rnd.randrange(0, len(self.subHand))     ###
-             self.played = self.subHand.pop(cardID)           #card to be played
-             self.hand.remove(self.played)                    #remove the card from the hand (since subHand and hand are different lists)
-         elif self.InHand(d.trumpSuit) == True:
-             cardID = rnd.randrange(0, len(self.subHand))     ###
-             self.played = self.subHand.pop(cardID)
-             self.hand.remove(self.played)
-         else:
-             cardID = rnd.randrange(0, len(self.hand))        ###
-             self.played = self.hand.pop(cardID)
-    
+        playableCards = 0
+        
+        """
+           New play routine which should fit better the machine learning implementation:
+           the hand is scanned and if the cards are playable their data member .isPlayable
+           becomes true, otherwise it is kept false. Then the card is played from the subset
+           of cards which have .isPlayed == True. This last step will be changed when the
+           RL algorithms are implemented, so for now it makes no difference, but having
+           the playability as a property of the card is useful.
+        """
+
+        for c in self.hand:                     #first try to flag cards in suit as playable
+            if c.suit == tab.leadingSuit:
+                c.isPlayable = True
+                playableCards += 1
+
+        if playableCards == 0:                  #if none, then try flag trumps as playable (of course checking if playableCards == 0
+            for c in self.hand:                 #also implies that trump != leading suit, so that cards are not counted twice)
+                if c.suit == d.trumpSuit:
+                    c.isPlayable = True
+                    playableCards += 1
+
+        if playableCards == 0:                  #otherwise flag any other card
+            for c in self.hand:
+                c.isPlayable = True 
+
+        self.played = self.Pop()
+        
+        if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
+            for c in self.hand:
+                c.isPlayable = False
+
+                
     def RotterdamPlay(self, tab, d):
         pass
 

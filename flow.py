@@ -24,7 +24,7 @@ d = deck.Deck()
 ##print('Players ', t.players)
 print('Dealer ', t.dealer)
 ##print('Ordered players ', t.orderedPlayers)   
-print('First player ', t.WhoPlays()[0])
+print('First player ', t.WhoPlays()[1])
 
 d.SetTrump(rnd.choice(d.suits))       #randomly chosen trump
 d.DivideCards()                

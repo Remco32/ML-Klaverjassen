@@ -7,9 +7,10 @@ import random as rnd
 class Card:
 
     def __init__(self, name, suit, value):
-        self.suit = suit
-        self.name = name
-        self.value = value
+        self.suit       = suit
+        self.name       = name
+        self.value      = value
+        self.isPlayable = False         #major change for playing algorithms
 
     def SetValue(self, value):
         self.value = value

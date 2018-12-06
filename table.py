@@ -44,7 +44,7 @@ class Table:
     def WhoPlays(self):
         p0   = self.orderedPlayers[0]
         p0ID = self.players.index(p0) 
-        return p0ID, p0
+        return p0, p0ID
 
     
     def DealCards(self, d):   #d is the deck object
