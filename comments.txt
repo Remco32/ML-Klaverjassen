@@ -1,0 +1,21 @@
+In table.py:
+   playerID is a tuple containing the player numbers which uniquely identify them
+   players is a list containing the player objects in the order they are sitting
+   cycleID contains two times the player IDs (0,1,2,3,0,1,2,3) to facilitate circular iteration
+   dealer is the index (referred to playerID) of the player who deals the card for the round
+   orderedPlayers is a list containing the player object rearranged so that the first one in the list is the
+   		  first to receive cards, and to play. This makes matters way easier when handing out cards
+		  and when playing them. It needs to be updated every round (=every time the dealer changes)
+    whoDeals() and whoPlays() return both the index (referred to playerID) and the player objects of the
+    	          dealer and the first player
+    order() is a function to order the players after having changed the dealer. It is automatically called when updating the dealer
+
+
+What needs to be done next:
+     - implement the points
+     - IMPORTANT: WHAT IS THE RULE IF AN 8 AND A 7 OF TRUMP ARE
+     PLAYED, AND NO OTHER TRUMPS? they boty have 0 value (this is only
+     valid in the 'simple' rules, and since they are made up, but a
+     good check for the functionalities, it could be good to have a
+     strategy for that situation)
+     
