@@ -90,6 +90,10 @@ class Table:
         self.winnerPlayerID = self.players.index(self.winnerPlayer)
         self.roundScore[self.winnerPlayer.team] += trickPoints    #trick points assignment
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
+
+        if self.players[0].hand == []:
+            self.roundScore[self.winnerPlayer.team] += 10
+            
         
         return self.winnerPlayer
 
