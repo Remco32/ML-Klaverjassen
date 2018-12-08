@@ -15,8 +15,11 @@ class Card:
     def SetValue(self, value):
         self.value = value
 
+    def SetIndex(self, index):
+        self.index = index
+
     def CardAsTuple(self):          # useful to visualise the card; all the internal working are done with the Card object directly
-        return self.name, self.suit, self.value
+        return self.index, self.name, self.suit, self.value
 
 # the deck is now a class
 class Deck:
@@ -28,7 +31,8 @@ class Deck:
     trumpDict    = {'J':20, '9':14, 'A':11, '10':10, 'K':4, 'Q':3, '8':0, '7':0}
 
     def __init__(self):   #create a trumpless deck with Klaverjassen cards
-        self.cards = [Card(n, s,  self.nonTrumpDict[n]) for s in self.suits for n in self.nonTrumpDict.keys() ]
+        self.cards = [Card(n, s,  self.nonTrumpDict[n]) for s in self.suits for n in self.nonTrumpDict.keys()] 
+        [self.cards[i].SetIndex(i) for i in range(len(self.cards))] #now cards are uniquely indexed for the whole game, after shuffling too
         self.dividedCards = self.handP0, self.handP1, self.handP2, self.handP3 = [], [], [], []
 
     def SetTrump(self, trumpSuit):  #set the trump values
@@ -41,8 +45,8 @@ class Deck:
     def DivideCards(self):
         #the hands need to be emptied beforehand, otherwise cards will be
         #added indefinitely; then the cards need to be shuffled again
-        rnd.shuffle(self.cards)
-        shuffledDeck = [card for card in self.cards]  ##MAJOR CHANGE: now the shuffled deck is not a collection of tuples, but of cards
+        self.shuffledCards = rnd.sample(self.cards, len(self.cards))      #now a copy of the deck is shuffled
+        shuffledDeck = [c for c in self.shuffledCards] 
         [self.dividedCards[i].clear() for i in range(4)]
 
         for cardIndex in range(len(shuffledDeck)):

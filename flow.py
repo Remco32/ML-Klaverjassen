@@ -15,9 +15,11 @@
 import table
 import deck
 import random as rnd
+import learn
 
 t = table.Table(1,'Simple')
 d = deck.Deck()
+l = learn.Learn()
 ##print('\nRound ', t.nRound) 
 ##print('PlayerIDs ', t.playerID)
 ##print('cycleIDs ', t.cycleID)
@@ -44,4 +46,6 @@ while t.players[0].hand != []:
     tmp = t.playedTuples           #to check if WhoWinsTrick works
     print('Played Cards', tmp)
     print('Winner player', t.WhoWinsTrick(d).position)
+    fv = l.CreatePlayFeaturesVector(t.players[1], t, d)
+    print(fv)
     print('Scores', t.roundScore)

@@ -8,6 +8,7 @@
 import deck
 import player
 import random as rnd
+import learn
 
 
 class Table:
@@ -48,6 +49,7 @@ class Table:
 
     
     def DealCards(self, d):   #d is the deck object
+        self.allPlayedCards = {}         #to keep track (count) of all the played cards and who played them
         [p.hand.clear() for p in self.players]
         for p in self.orderedPlayers:
             p.hand = d.HandOutCards(self.orderedPlayers.index(p))
@@ -60,6 +62,13 @@ class Table:
                 self.leadingSuit = self.playedCards[0].suit
             else:
                 self.playedCards.append(p.Play(self, d))
+
+        for c in self.playedCards:             
+            tmp = self.playedCards.index(c)
+            tmp = self.orderedPlayers[tmp]    #player object who played the card
+            tmp = self.players.index(tmp)     #player number who played the card
+            self.allPlayedCards[c] = tmp      #add to the dict
+            
         self.playedTuples = [c.CardAsTuple() for c in self.playedCards] #to check from the command line if the algorithm works 
 
         
