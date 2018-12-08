@@ -39,7 +39,7 @@ class Player:
         return popped
 
         
-\    # method to play a card from the hand.
+    # method to play a card from the hand.
     def Play(self, tab, d):  #tab is the table object for the rules, d is the deck object for the trump suit
         
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
