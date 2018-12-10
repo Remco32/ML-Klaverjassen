@@ -37,14 +37,19 @@ class Learn:
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
                 tmp.append(1)
+                print(c.CardAsTuple())
             else:
                 tmp.append(0)
+                print(c.CardAsTuple())
+        
 
         for c in dck.cards:
             if c in tbl.allPlayedCards.keys():
                 tmp.append(tbl.allPlayedCards[c] + 1)
             else:
                 tmp.append(0)
+
+        
 
         [tmp.append(s) for s in tbl.roundScore]
 

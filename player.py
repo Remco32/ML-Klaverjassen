@@ -26,6 +26,7 @@ class Player:
     def __init__(self, number):  #number is an integer from 0 to 3
         self.position = number
         self.hand = []
+        self.isLeading = False
         if number % 2 == 0:
             self.team = 0
         else:
@@ -37,6 +38,16 @@ class Player:
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
         self.hand.remove(popped)
         return popped
+
+    def IsTeammateLeading(self, tbl):
+        if tbl.orderedPlayers.index(self) == 0 or tbl.orderedPlayers.index(self) == 1 :
+            return False
+        else:
+            if tbl.highestPlayer.team == self.team:  
+                return True
+            else:
+                return False
+            
 
         
     # method to play a card from the hand.
@@ -77,16 +88,39 @@ class Player:
                 c.isPlayable = True
                 playableCards += 1
 
-        if playableCards == 0:                  #if none, then try flag trumps as playable (of course checking if playableCards == 0
-            for c in self.hand:                 #also implies that trump != leading suit, so that cards are not counted twice)
-                if c.suit == d.trumpSuit:
+        if playableCards == 0:
+            if self.IsTeammateLeading(tab):       
+                for c in self.hand:
                     c.isPlayable = True
                     playableCards += 1
+            else:
+                if tab.isTrumpPlayed:        #if none, then try flag trumps as playable (of course checking if playableCards == 0
+                    for c in self.hand:              #also implies that trump != leading suit, so that cards are not counted twice)
+                        if c.suit == d.trumpSuit:
+                            if c.rank > tab.highestCard.rank:         
+                                c.isPlayable = True
+                                playableCards += 1
+                    if playableCards == 0:
+                        for c in self.hand:              
+                            if c.suit == d.trumpSuit:         
+                                c.isPlayable = True
+                                playableCards += 1
 
-        if playableCards == 0:                  #otherwise flag any other card
-            for c in self.hand:
-                c.isPlayable = True 
-
+                    if playableCards == 0:                  #otherwise flag any other card
+                        for c in self.hand:
+                            c.isPlayable = True
+                            playableCards += 1
+                elif playableCards == 0:
+                    for c in self.hand:
+                        if c.suit == d.trumpSuit:         
+                                c.isPlayable = True
+                                playableCards += 1
+                                
+                    if playableCards == 0:
+                        for c in self.hand:
+                            c.isPlayable = True
+                            playableCards += 1
+                        
         self.played = self.Pop()
         
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick

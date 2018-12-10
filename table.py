@@ -56,12 +56,25 @@ class Table:
         
 
     def PlayCards(self, d):     #d is the deck object
+        self.isTrumpPlayed = False
         for p in self.orderedPlayers:
             if self.orderedPlayers.index(p) == 0:
                 self.playedCards = [p.Play(self, d)]   #play the first card
                 self.leadingSuit = self.playedCards[0].suit
+                self.highestCard = self.playedCards[0]
+                p.isLeading = True
+                self.highestPlayer = p
+                if self.playedCards[0].suit == d.trumpSuit:
+                    self.isTrumpPlayed = True
             else:
                 self.playedCards.append(p.Play(self, d))
+                if self.playedCards[len(self.playedCards) - 1].rank > self.highestCard.rank:
+                    self.highestCard = self.playedCards[len(self.playedCards) - 1]
+                    p.isLeading = True
+                    self.highestPlayer = p
+                    if self.playedCards[len(self.playedCards) - 1].suit == d.trumpSuit:
+                        self.isTrumpPlayed = True
+                    
 
         for c in self.playedCards:             
             tmp = self.playedCards.index(c)
@@ -74,7 +87,7 @@ class Table:
         
     def WhoWinsTrick(self, d):    #d is the deck object
         trickPoints = 0
-        self.winValue = 0
+        self.winRank = 0
         self.playedTrump = False
         for c in self.playedCards:
             trickPoints += c.value
@@ -84,14 +97,14 @@ class Table:
         if self.playedTrump == True:
             for c in self.playedCards:
                 if c.suit == d.trumpSuit:
-                    if c.value >= self.winValue:
-                        self.winValue = c.value
+                    if c.rank >= self.winRank:
+                        self.winRank = c.rank
                         self.winnerCard = c
         else:
             for c in self.playedCards:
                 if c.suit == self.leadingSuit:
-                    if c.value >= self.winValue:
-                        self.winValue = c.value
+                    if c.rank >= self.winRank:
+                        self.winRank = c.rank
                         self.winnerCard = c
             
         tmp = self.playedCards.index(self.winnerCard)

@@ -49,3 +49,4 @@ while t.players[0].hand != []:
     fv = l.CreatePlayFeaturesVector(t.players[1], t, d)
     print(fv)
     print('Scores', t.roundScore)
+    
