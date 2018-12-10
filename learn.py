@@ -41,10 +41,10 @@ class Learn:
             else:
                 tmp.append(0)
 
-        # Current game scores for team 0 and team 1 #TODO sorta untested!
+        # Current game scores for team 0 and team 1
         [tmp.append(s) for s in tbl.gameScore]
 
-        # Round number #TODO sorta untested!
+        # Round number
         tmp.append(tbl.nRound)
 
 
