@@ -22,8 +22,6 @@ class Learn:
         - game score for opposite team
         - round number
         """
-
-
         pass
 
     # Feature vector looks like this: #TODO finish for easier reading fo the code
@@ -40,21 +38,25 @@ class Learn:
         - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
         (- round number and game scores) optional
         """
-
+        tmp = []
         # Generate part of feature vector for the player's hand
         tmp = []
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
                 tmp.append(1)
+                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
             else:
                 tmp.append(0)
+                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+        
 
-        # Generate part of feature vector for the played cards
         for c in dck.cards:
             if c in tbl.allPlayedCards.keys():
                 tmp.append(tbl.allPlayedCards[c] + 1)
             else:
                 tmp.append(0)
+
+        
 
         [tmp.append(s) for s in tbl.roundScore]
 
