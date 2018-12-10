@@ -46,6 +46,11 @@ while t.players[0].hand != []:
     tmp = t.playedTuples           #to check if WhoWinsTrick works
     print('Played Cards', tmp)
     print('Winner player', t.WhoWinsTrick(d).position)
-    fv = l.CreatePlayFeaturesVector(t.players[1], t, d)
-    print(fv)
+
+    fv_play = l.CreatePlayFeaturesVector(t.players[1], t, d)
+    print('Feature vector for "play" network player ' + str(fv_play))
+
+    fv_trump = l.CreateTrumpFeaturesVector(t.players[1], t, d)
+    print('Feature vector for "trump" network ' + str(fv_trump))
+
     print('Scores', t.roundScore)

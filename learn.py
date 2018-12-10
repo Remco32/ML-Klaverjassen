@@ -13,7 +13,7 @@ import numpy as np
 
 class Learn:
 
-    def CreateTrumpFeaturesVector(self):
+    def CreateTrumpFeaturesVector(self, pl, tbl, dck):
         """
         Needed features:
         - hand (32 binary features)
@@ -22,14 +22,43 @@ class Learn:
         - game score for opposite team
         - round number
         """
-        pass
+
+        tmp = []
+        # Generate part of feature vector for the player's hand
+        tmp = []
+        for c in dck.cards:  # deck.Deck.cards is an ordered list with card indexes from 0 to 31
+            if c in pl.hand:
+                tmp.append(1)
+                # print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+            else:
+                tmp.append(0)
+                # print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+
+        # Generate part of feature vector for keeping track of which cards are played
+        for c in dck.cards:
+            if c in tbl.allPlayedCards.keys():
+                tmp.append(tbl.allPlayedCards[c] + 1)
+            else:
+                tmp.append(0)
+
+        # Current game scores for team 0 and team 1 #TODO sorta untested!
+        [tmp.append(s) for s in tbl.gameScore]
+
+        # Round number #TODO sorta untested!
+        tmp.append(tbl.nRound)
+
+
+
+        self.playFeaturesVector = np.array(tmp)  # since pytorch most likely wants numpy arrays as inputs;
+        return self.playFeaturesVector
+
 
     # Feature vector looks like this: #TODO finish for easier reading fo the code
-    #TODO# First 32 values correspond to the hand of the player
+    # First 32 values correspond to the hand of the player
     # Then 32 values corresponding to which cards have been played in this round
-    # Each of these 32 values or keeping track of the cards are set up like this:
-    # 4 sets of cards, in order of suits
-    # First 8 values are the hearts, in the order [
+    ## Each of these 32 values or keeping track of the cards are set up like this:
+    ## 4 sets of cards, in order of suits [d, c, h, s]
+    ## First 8 values are the hearts, in the order [A, 10, K, Q, J, 9, 8 ,7]
     def CreatePlayFeaturesVector(self, pl, tbl, dck):
         """
         Needed features:
@@ -45,12 +74,12 @@ class Learn:
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
                 tmp.append(1)
-                print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
             else:
                 tmp.append(0)
-                print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
         
-
+        # Generate part of feature vector for keeping track of which cards are played
         for c in dck.cards:
             if c in tbl.allPlayedCards.keys():
                 tmp.append(tbl.allPlayedCards[c] + 1)
@@ -58,11 +87,12 @@ class Learn:
                 tmp.append(0)
 
         
-
+        # Current round scores for team 0 and team 1
         [tmp.append(s) for s in tbl.roundScore]
 
+        # Which card is the trump?
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
-        #tmp.append(who chose the trump)
+        #tmp.append(who chose the trump) #TODO implement reading the actual trump value
                 
         self.playFeaturesVector = np.array(tmp)     #since pytorch most likely wants numpy arrays as inputs;
         return self.playFeaturesVector
