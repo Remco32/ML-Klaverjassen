@@ -28,7 +28,8 @@ class Learn:
     #TODO# First 32 values correspond to the hand of the player
     # Then 32 values corresponding to which cards have been played in this round
     # Each of these 32 values or keeping track of the cards are set up like this:
-    # First 8 values are the hearts, in the order [A, 9, 10, K, Q, 7, 8]
+    # 4 sets of cards, in order of suits
+    # First 8 values are the hearts, in the order [
     def CreatePlayFeaturesVector(self, pl, tbl, dck):
         """
         Needed features:
@@ -44,10 +45,10 @@ class Learn:
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
                 tmp.append(1)
-                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+                print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
             else:
                 tmp.append(0)
-                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
+                print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
         
 
         for c in dck.cards:
