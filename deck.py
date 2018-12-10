@@ -33,8 +33,6 @@ class Deck:
     suits = ('d', 'c', 'h', 's')
     #NEW value dictionaries to build a deck after deciding the trump in each round
     #the second value is the rank of the card
-    #nonTrumpDict = {'A':(11,8), '10':(10,7), 'K':(4,6), 'Q':(3,5), 'J':(2,4), '9':(0,3), '8':(0,2), '7':(0,1)}
-    #trumpDict    = {'J':(20,16), '9':(14,15), 'A':(11,14), '10':(10,13), 'K':(4,12), 'Q':(3,11), '8':(0,10), '7':(0,9)}
     nonTrumpDict = OrderedDict([('A',(11,8)), ('10',(10,7)), ('K',(4,6)), ('Q',(3,5)), ('J',(2,4)), ('9',(0,3)), ('8',(0,2)), ('7',(0,1))])
     trumpDict    = OrderedDict([('J',(20,16)), ('9',(14,15)), ('A',(11,14)), ('10', (10,13)), ('K',(4,12)), ('Q',(3,11)), ('8',(0,10)), ('7',(0,9))])
 
