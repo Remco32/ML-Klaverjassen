@@ -22,8 +22,15 @@ class Learn:
         - game score for opposite team
         - round number
         """
+
+
         pass
 
+    # Feature vector looks like this: #TODO finish for easier reading fo the code
+    #TODO# First 32 values correspond to the hand of the player
+    # Then 32 values corresponding to which cards have been played in this round
+    # Each of these 32 values or keeping track of the cards are set up like this:
+    # First 8 values are the hearts, in the order [A, 9, 10, K, Q, 7, 8]
     def CreatePlayFeaturesVector(self, pl, tbl, dck):
         """
         Needed features:
@@ -33,6 +40,8 @@ class Learn:
         - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
         (- round number and game scores) optional
         """
+
+        # Generate part of feature vector for the player's hand
         tmp = []
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
@@ -40,6 +49,7 @@ class Learn:
             else:
                 tmp.append(0)
 
+        # Generate part of feature vector for the played cards
         for c in dck.cards:
             if c in tbl.allPlayedCards.keys():
                 tmp.append(tbl.allPlayedCards[c] + 1)

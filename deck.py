@@ -31,8 +31,8 @@ class Deck:
     trumpDict    = {'J':20, '9':14, 'A':11, '10':10, 'K':4, 'Q':3, '8':0, '7':0}
 
     def __init__(self):   #create a trumpless deck with Klaverjassen cards
-        self.cards = [Card(n, s,  self.nonTrumpDict[n]) for s in self.suits for n in self.nonTrumpDict.keys()] 
-        [self.cards[i].SetIndex(i) for i in range(len(self.cards))] #now cards are uniquely indexed for the whole game, after shuffling too
+        self.cards = [Card(n, s,  self.nonTrumpDict[n]) for s in self.suits for n in self.nonTrumpDict.keys()]
+        [self.cards[i].SetIndex(i) for i in range(len(self.cards))] #now cards are uniquely indexed for the whole game, after shuffling too #TODO nope, the order of the indexed cards isn't set, seems random
         self.dividedCards = self.handP0, self.handP1, self.handP2, self.handP3 = [], [], [], []
 
     def SetTrump(self, trumpSuit):  #set the trump values
