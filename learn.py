@@ -1,7 +1,6 @@
-# PyTorch or TensorFlow for NN
+# PyTorch for NN
 # SkLearn for decision trees
 #
-#  Meeting Monday at 1pm room 228 (Whatsapp)
 #
 # Adjust the rules
 
@@ -9,10 +8,42 @@ import deck
 import player
 import table
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 
-class Learn:
+"""
+This class handles all the neural network business, including creating the feature vectors.
+The features vector is a data attribute of the class; if the two feature creating methods
+are called subsequentially, the second feature vector will override the first one: so for
+each network one must define a different Net object.
+"""
 
+
+class Net(nn.Module):
+
+    def __init__(self, nFeat):
+        super(Net, self).__init__()
+        self.conn1 = nn.Linear(nFeat, 50)             #since each layer will take a lin combination of the previous layer's nodes
+        self.conn2 = nn.Linear(50,50)
+        self.conn3 = nn.Linear(50, 32)                 #32 is the deck size
+
+    def forward(self, tens):
+        tens = torch.sigmoid(self.conn1(tens))   #pass the input layer to the first hidden layer through connection 1 defined in __init__
+        tens = torch.sigmoid(self.conn2(tens))   #pass the first hidden layer to the second hidden layer through connection 2
+        tens = self.conn3(tens)    #pass the second hidden layer to the output layer through connection 3 without any activation function
+        return tens
+
+
+
+
+
+
+    ##################################################
+    #             Feature creating methods           #
+    ##################################################
+    
     def CreateTrumpFeaturesVector(self, pl, tbl, dck):
         """
         Needed features:
@@ -29,10 +60,8 @@ class Learn:
         for c in dck.cards:  # deck.Deck.cards is an ordered list with card indexes from 0 to 31
             if c in pl.hand:
                 tmp.append(1)
-                # print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
             else:
                 tmp.append(0)
-                # print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
 
         # Generate part of feature vector for keeping track of which cards are played
         for c in dck.cards:
@@ -49,9 +78,11 @@ class Learn:
 
 
 
-        self.playFeaturesVector = np.array(tmp)  # since pytorch most likely wants numpy arrays as inputs;
-        return self.playFeaturesVector
+        self.featuresVector = torch.tensor(tmp)  # since pytorch wants tensors as inputs;
+        self.nFeatures = len(tmp)
+        return self.featuresVector
 
+    
 
     # Feature vector looks like this: #TODO finish for easier reading fo the code
     # First 32 values correspond to the hand of the player
@@ -59,8 +90,12 @@ class Learn:
     ## Each of these 32 values or keeping track of the cards are set up like this:
     ## 4 sets of cards, in order of suits [d, c, h, s]
     ## First 8 values are the hearts, in the order [A, 10, K, Q, J, 9, 8 ,7]
+
+
+    
     def CreatePlayFeaturesVector(self, pl, tbl, dck):
         """
+        This will have to be called after every trick is played, to update the features.
         Needed features:
         - hand (same as above)
         - which card were played and by who (32 numbers from 0 to 4: 0 not played, 1,2,3,4 number of player)
@@ -74,10 +109,8 @@ class Learn:
         for c in dck.cards:      #deck.Deck.cards is an ordered list with card indexes from 0 to 31 
             if c in pl.hand:
                 tmp.append(1)
-                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
             else:
                 tmp.append(0)
-                #print("LOOK HERE DUMMY!: " + str(c.CardAsTuple()))
         
         # Generate part of feature vector for keeping track of which cards are played
         for c in dck.cards:
@@ -94,8 +127,7 @@ class Learn:
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
         #tmp.append(who chose the trump) #TODO implement reading the actual trump value
                 
-        self.playFeaturesVector = np.array(tmp)     #since pytorch most likely wants numpy arrays as inputs;
-        return self.playFeaturesVector
-        
-        
-    
+        self.featuresVector = torch.tensor(tmp)     #since pytorch wants tensors as inputs;
+        self.nFeatures = len(tmp)
+        return self.featuresVector
+
