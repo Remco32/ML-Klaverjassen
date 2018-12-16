@@ -3,23 +3,32 @@ Simpler version of a card game to try out some reinforcement learning
 algorithms and mechanics
 """
 
+import time
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-#learning rate and discount rate
-alpha, y = 0.01, 0.9
+#learning rate and discount rate and epochs
+alpha, y, epochs, savingEpoch = 0.01, 0.9, 1000, 100
+#to save the weights
+FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+PATH1 = FOLDER + 'net1_weights.pth'
+PATH2 = FOLDER + 'net2_weights.pth'
 
 #the network
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conn1 = nn.Linear(8,20)  #input - first HL
-        self.conn2 = nn.Linear(20,4)  #first HL - output
+        self.conn1 = nn.Linear(12,7)  #input - first HL
+        self.conn2 = nn.Linear(7,7)  #first HL - second HL
+        self.conn3 = nn.Linear(7,6)  #second HL - output 
     def forward(self, x):
         x = torch.sigmoid(self.conn1(x))
-        x = self.conn2(x)
+        x = torch.sigmoid(self.conn2(x))
+        x = self.conn3(x)
         return x
 
     
@@ -27,44 +36,57 @@ class Net(nn.Module):
 net1 = Net()
 net2 = Net()
 
+#the players' input features
+p1 = torch.zeros(12, dtype=torch.float, requires_grad=True)
+p2 = torch.zeros(12, dtype=torch.float, requires_grad=True)
+    
+#load parameters from previous training rounds
+"""
+net1.load_state_dict(torch.load(PATH1))
+net2.load_state_dict(torch.load(PATH2))
+print('Loaded model parameters from folder {}'.format(FOLDER))
+"""
+
+
 #stochastic gradient descent optimiser
 opt1 = torch.optim.SGD(net1.parameters(), lr=alpha, momentum=0.9)
 opt2 = torch.optim.SGD(net2.parameters(), lr=alpha, momentum=0.9)
 
  #two tensors represent the player's feature vectors
-p1_list, p2_list, table_list = [1,0,1,0], [0,1,0,1], [0,0,0,0]
-p1 = torch.tensor(p1_list + table_list, dtype=torch.float, requires_grad=True)
-p2 = torch.tensor(p2_list + table_list, dtype=torch.float, requires_grad=True)
-Q1 = torch.zeros(4)
-Q2 = torch.zeros(4)
+Q1 = torch.zeros(6)
+Q2 = torch.zeros(6)
 
+#start counter
+start = time.time()
 
-for i in range(500):    
-    p1_id, p2_id = [0,2], [1,3]
+#to keep track of the total reward obtained by player 2 (who in this simple
+#game should always win
+rew2 = []
+#start the training cycle
+for i in range(epochs):
+
+    #re-initialise the feature vectors
+    p1 = torch.zeros(12, dtype=torch.float, requires_grad=True)
+    p2 = torch.zeros(12, dtype=torch.float, requires_grad=True)
+    p1_id, p2_id = [0,2,4], [1,3,5]
     with torch.no_grad():
-       for i in range(8):
-           p1[i] = 0
-           p2[i] = 0
-           if i in p1_id:
-               p1[i] = 1
-           if i in p2_id:
-                p2[i] == 1
+        for k in range(12):
+            if k in p1_id:
+                p1[k] = 1
+            elif k in p2_id:
+                p2[k] = 1
         
-    
-    for j in range(2):
-        #e.g. [1,0,1,0] --> either [0,0,1,0] or [1,0,0,0]
-        print(p1, p2)
-        opt1.zero_grad()
-        opt2.zero_grad()
+    #print('\nRound {} \tNew hands:\n{},\n{}'.format(i,p1,p2))
+    for j in range(3):
         out1 = net1(p1)
         out2 = net2(p2)
         a1 = out1.argmax()
         a2 = out2.argmax()
 
         while a1 not in p1_id:     #learn that it's a mistake
-            r1 = -10
+            r1 = -100
             _Q1 = net1(p1)
-            Q1 += alpha * ( r1 + y * torch.max(_Q1).item() - Q1)   #QLearning rule
+            Q1[a1] += alpha * ( r1 + y * torch.max(_Q1).item() - Q1[a1]) 
             loss1 = ( 0.5 * ( _Q1 - Q1 ) ** 2 ).sum()              #square loss
             opt1.zero_grad()
             loss1.backward()
@@ -73,9 +95,10 @@ for i in range(500):
             a1 = out1.argmax()
 
         while a2 not in p2_id:
-            r2 = -10
+            r2 = -100
+            rew2.append(r2)
             _Q2 = net2(p2)
-            Q2 += alpha * ( r2 + y * torch.max(_Q2).item() - Q2)
+            Q2[a2] += alpha * ( r2 + y * torch.max(_Q2).item() - Q2[a2])
             loss2 = ( 0.5 * ( _Q2 - Q2 ) ** 2 ).sum()
             opt2.zero_grad()
             loss2.backward()
@@ -85,19 +108,21 @@ for i in range(500):
         
         #Simple game rule: the highest index wins
         if a1 > a2:
-            r1 = 10
+            r1 = a1.item() + a2.item()
             r2 = -1           #not as bad as playing the wrong card
+            rew2.append(r2)
         elif a2 > a1:
-            r2 = 10
+            r2 = a1.item() + a2.item()
             r1 = -1
+            rew2.append(r2)
 
         with torch.no_grad():     
             p1[a1] = 0
             p2[a2] = 0
-            p1[4 + a1] = 1
-            p1[4 + a2] = 1
-            p2[4 + a1] = 1
-            p2[4 + a2] = 1
+            p1[6 + a1] = 1
+            p1[6 + a2] = 1
+            p2[6 + a1] = 1
+            p2[6 + a2] = 1
 
         p1_id.remove(a1)
         p2_id.remove(a2)
@@ -113,4 +138,23 @@ for i in range(500):
         loss2.backward()
         opt1.step()
         opt2.step()
+        #print('Hands after playing:\n{},\n{}'.format(p1,p2))
+    if i  % savingEpoch == 0:
+        torch.save(net1.state_dict(), PATH1)
+        torch.save(net2.state_dict(), PATH2)
+        print('Epoch {} of {}\nSaved weight files in {}'.format(i,epochs,FOLDER))
+
+
+torch.save(net1.state_dict(), PATH1)
+torch.save(net2.state_dict(), PATH2)
+print('\nSaved weight files in folder {}'.format(FOLDER))
+
+#calculate total training time
+elapsed = time.time() - start
+print('\n\nTotal training time: {:.6}'.format(elapsed))
+
+#plot the reward for player 2
+r = np.array(rew2)
+plt.plot(r,'+r')
+plt.show()
 
