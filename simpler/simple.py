@@ -10,9 +10,10 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
+import pdb
 
 #learning rate and discount rate and epochs
-alpha, y, epochs, savingEpoch = 0.01, 0.9, 5000, 50
+alpha, y, epochs, savingEpoch, printEpoch = 0.01, 0.9, 30000, 30, 5
 #to save the weights
 FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
 PATH1 = FOLDER + 'net1_weights.pth'
@@ -22,7 +23,7 @@ PATH2 = FOLDER + 'net2_weights.pth'
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conn1 = nn.Linear(12,7)  #input - first HL
+        self.conn1 = nn.Linear(12,7)  
         self.conn4 = nn.Linear(7,6)
     def forward(self, x):
         x = torch.sigmoid(self.conn1(x))
@@ -48,9 +49,7 @@ opt2 = torch.optim.SGD(net2.parameters(), lr=alpha, momentum=0.9)
 loss1 = nn.MSELoss()
 loss2 = nn.MSELoss()
 
- #two tensors represent the player's output vectors
-Q1 = torch.zeros(6)
-Q2 = torch.zeros(6)
+
 
 #start counter
 start = time.time()
@@ -82,24 +81,33 @@ for i in range(epochs):
         out2 = net2(p2)
         a1 = out1.argmax()
         a2 = out2.argmax()
+        
 
         while a1.item() not in p1_id:     #learn that it's a mistake
-            r1 = -100
-            _Q1 = net1(p1)
-            Q1[a1] = alpha * ( r1 + y * torch.max(_Q1).item()) 
-            l1 = loss1(_Q1, Q1)              #square loss
+            #pdb.set_trace()
+            r1 = -1
+            with torch.no_grad():
+                P1 = p1.clone()
+                _Q1 = net1(P1)
+                Q1 = out1.clone()
+            Q1[a1] += alpha * ( r1 + y * torch.max(_Q1).item() - Q1[a1])
+            l1 = loss1(Q1, out1)              #square loss
             l1.backward()
             opt1.step()
             opt1.zero_grad()
             out1 = net1(p1)
             a1 = out1.argmax()
 
-        while a2.item() not in p2_id:
-            r2 = -100
+        while a2.item() not in p2_id:     #learn that it's a mistake
+            #pdb.set_trace()
+            r2 = -1
             rew2.append(r2)
-            _Q2 = net2(p2)
-            Q2[a2] = alpha * ( r2 + y * torch.max(_Q2).item())
-            l2 = loss2(_Q2, Q2)
+            with torch.no_grad():
+                P2 = p2.clone()
+                _Q2 = net2(P2)
+                Q2 = out2.clone()
+            Q2[a2] += alpha * ( r2 + y * torch.max(_Q2).item() - Q2[a2])
+            l2 = loss2(Q2, out2)              #square loss
             l2.backward()
             opt2.step()
             opt2.zero_grad()
@@ -109,37 +117,45 @@ for i in range(epochs):
         #Simple game rule: the highest index wins
         if a1.item() > a2.item():
             r1 = a1.item() + a2.item()
-            r2 = -1           #not as bad as playing the wrong card
+            r2 = 0           #not as bad as playing the wrong card
             rew2.append(r2)
         elif a2.item() > a1.item():
             r2 = a1.item() + a2.item()
-            r1 = -1
+            r1 = 0
             rew2.append(r2)
         
-        with torch.no_grad():     
-            p1[a1] = 0
-            p2[a2] = 0
-            p1[6 + a1] = 1
-            p1[6 + a2] = 1
-            p2[6 + a1] = 1
-            p2[6 + a2] = 1
+        with torch.no_grad():
+            P1 = p1.clone()
+            P2 = p2.clone()
+            P1[a1] = 0
+            P2[a2] = 0
+            P1[6 + a1] = 1
+            P1[6 + a2] = 1
+            P2[6 + a1] = 1
+            P2[6 + a2] = 1
         
         p1_id.remove(a1.item())
         p2_id.remove(a2.item())
         opt1.zero_grad()
         opt2.zero_grad()
-        _Q1 = net1(p1)          #next state Q values
-        _Q2 = net2(p2)
-        Q1[a1] = alpha * ( r1 + y * torch.max(_Q1).item())
-        Q2[a2] = alpha * ( r2 + y * torch.max(_Q2).item())
-        l1 = loss1(_Q1, Q1)
-        l2 = loss2(_Q2, Q2)
+        with torch.no_grad():
+            _Q1 = net1(P1)          #next state Q values
+            _Q2 = net2(P2)
+            Q1  = out1.clone() 
+            Q2  = out2.clone()
+        Q1[a1] += alpha * ( r1 + y * torch.max(_Q1).item() - Q1[a1])
+        Q2[a2] += alpha * ( r2 + y * torch.max(_Q2).item() - Q2[a2])
+        #pdb.set_trace()
+        l1 = loss1(Q1, out1)
+        l2 = loss2(Q2, out2)
         l1.backward()
         l2.backward()
         opt1.step()
-        opt2.step() 
+        opt2.step()
+        p1 = P1.clone()
+        p2 = P2.clone()
         #print('Hands after playing:\n{},\n{}'.format(p1,p2))
-    if i % 1 == 0:
+    if i % printEpoch == 0:
         print('Epoch {} of {}'.format(i,epochs))
     if i  % savingEpoch == 0:
         torch.save(net1.state_dict(), PATH1)
