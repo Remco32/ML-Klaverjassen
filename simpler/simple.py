@@ -11,9 +11,9 @@ import pdb
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 3000, 300, 30
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 300, 300, 30
 rew1, rew2 = [], []
-r1Win, r1Lose, r2Win, r2Lose = 3, -0.5, 2, -0.75
+r1Win, r1Lose, r2Win, r2Lose = 3, -0.25, 2, -0.5
 
 #load parameters?
 loadP = 1
@@ -73,12 +73,9 @@ for i in range(epoch):
 
     for j in range(3):
         opt1.zero_grad()
-        opt2.zero_grad()
         out1 = n1(p1)
-        out2 = n2(p2)
         a1   = out1.argmax().item()
-        a2   = out2.argmax().item()
-
+       
         while a1 not in id1:
             r1 = -1
             rew1.append(r1)
@@ -91,6 +88,20 @@ for i in range(epoch):
             opt1.zero_grad()
             out1 = n1(p1)
             a1   = out1.argmax().item()
+
+        with torch.no_grad():
+            P1 = p1.clone()
+            P2 = p2.clone()
+            P1[6 + a1] = 1
+            P2[6 + a1] = 1
+            p1 = P1.clone()
+            p2 = P1.clone()
+            p1.requires_grad = True
+            p2.requires_grad = True
+            
+        opt2.zero_grad()
+        out2 = n2(p2)
+        a2   = out2.argmax().item()
 
         while a2 not in id2:
             r2 = -1
@@ -121,9 +132,7 @@ for i in range(epoch):
             P2 = p2.clone()
             P1[a1] = 0
             P2[a2] = 0
-            P1[6 + a1] = 1
             P1[6 + a2] = 2       #major change
-            P2[6 + a1] = 1
             P2[6 + a2] = 2       #major change
 
         id1.remove(a1)
@@ -168,6 +177,6 @@ print('\n\nTotal training time: {:.6}'.format(elapsed))
 #plot the reward
 r1 = np.array(rew1)
 r2 = np.array(rew2)
-plt.plot(r1,'ob')
-plt.plot(r2,'xr')
+plt.plot(r1,'-b')
+plt.plot(r2,'.r')
 plt.show()
