@@ -8,20 +8,19 @@ import torch.nn as nn
 import pdb
 import os # For path creation for saving files
 
-
-
-
-
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 5, 300, 30 # Hyperparameters
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 300, 300, 30 # Hyperparameters
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 3, -0.25, 2, -0.5
+
+# Print time each epoch?
+printElapsedTimeEachEpoch = True
 
 #load parameters?
 loadP = 1
 #to save the weights
 #FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
-FOLDER = dirname = os.path.dirname(__file__) + '/weights/' # Using relative path
+FOLDER = os.path.dirname(__file__) + '/weights/' # Using relative path
 
 # Check if folder exists, to avoid errors
 if not os.path.exists(FOLDER):
@@ -68,8 +67,9 @@ loss2 = nn.MSELoss()
 
 
 #THE GAME
-start = time.time()
+start_first_epochs = time.time()
 for i in range(epoch):
+    start_current_epoch = time.time()
 
     id1, id2 = [0, 2, 4], [1, 3, 5]
     p1 = torch.zeros(12, dtype=torch.float, requires_grad=True)
@@ -170,10 +170,10 @@ for i in range(epoch):
         torch.save(n2.state_dict(), PATH2)
         print('Epoch {} of {}\nSaved weight files in {}'.format(i,epoch,FOLDER))
 
+    # Show time spent
+    if printElapsedTimeEachEpoch:
+        print('Elapsed time this epoch: ' + str(time.time() - start_current_epoch) + ' seconds')
 
-        
-
-        
 #AFTER THE GAME
 #save params
 torch.save(n1.state_dict(), PATH1)
@@ -181,7 +181,7 @@ torch.save(n2.state_dict(), PATH2)
 print('Epoch {} of {}\nSaved weight files in {}'.format(i,epoch,FOLDER))
 
 #calculate total training time
-elapsed = time.time() - start
+elapsed = time.time() - start_first_epochs
 print('\n\nTotal training time: {:.6}'.format(elapsed))
 
 #plot the reward
