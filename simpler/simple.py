@@ -6,19 +6,28 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import pdb
+import os # For path creation for saving files
+
 
 
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 300, 300, 30
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 5, 300, 30 # Hyperparameters
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 3, -0.25, 2, -0.5
 
 #load parameters?
 loadP = 1
 #to save the weights
-FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+#FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+FOLDER = dirname = os.path.dirname(__file__) + '/weights/' # Using relative path
+
+# Check if folder exists, to avoid errors
+if not os.path.exists(FOLDER):
+    os.makedirs(FOLDER)
+
+
 PATH1 = FOLDER + 'net1_weights.pth'
 PATH2 = FOLDER + 'net2_weights.pth'
 
@@ -41,7 +50,8 @@ n1 = Net()
 n2 = Net()
 
 #load parameters from previous training rounds
-if loadP == 1:
+if loadP == 1 and os.path.exists(PATH1) and os.path.exists(PATH2):
+
     n1.load_state_dict(torch.load(PATH1))
     n2.load_state_dict(torch.load(PATH2))
     print('Loaded model parameters from folder {}'.format(FOLDER))
