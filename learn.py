@@ -101,7 +101,8 @@ class Net(nn.Module):
         - which card were played and by who (32 numbers from 0 to 4: 0 not played, 1,2,3,4 number of player)
         - round scores (2 numbers)
         - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
-        (- round number and game scores) optional
+        - Cards on the table
+        (- round number and game scores) optional #TODO round number is not so optional according to Wiering
         """
         tmp = []
         # Generate part of feature vector for the player's hand
@@ -126,7 +127,17 @@ class Net(nn.Module):
         # Which card is the trump?
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
         #tmp.append(who chose the trump) #TODO implement reading the actual trump value
-                
+
+
+        # TODO add features about what is present on the table
+        # Needs only 3 feature, since your own card played is implicit
+        # Idea on this part of the vector:
+        # number each card in sequence (i.e. first card of hearts will be 1, second card of hearts 2), and keep track of it that way. Those features don't have to be recycled since the cards on the table will only be useful for one trick. And we already keep track of which cards have been played in the round
+
+
+        # Round number #TODO still not entirely sure if this is useful information, since strategy shouldn't change according to rounds. But I expect Wiering played this game aplenty...
+        tmp.append(tbl.nRound)
+
         self.featuresVector = torch.tensor(tmp)     #since pytorch wants tensors as inputs;
         self.nFeatures = len(tmp)
         return self.featuresVector
