@@ -19,7 +19,8 @@ import learn
 
 t = table.Table(1,'Simple')
 d = deck.Deck()
-l = learn.Learn()
+l = learn.Net(100) #TODO This was a hotfix so the code works. Not sure what the right value should be,
+# since this is the size of the input vector, which should be different for the play and trump network
 ##print('\nRound ', t.nRound) 
 ##print('PlayerIDs ', t.playerID)
 ##print('cycleIDs ', t.cycleID)
