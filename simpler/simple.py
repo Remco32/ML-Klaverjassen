@@ -1,3 +1,4 @@
+
 import time
 import numpy as np
 import matplotlib
@@ -12,7 +13,7 @@ import pdb
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 3000000, 30000, 6000
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 30000, 3000, 600
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
 
@@ -20,7 +21,9 @@ r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
 loadP = 1
 #to save the weights
 FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
-PATH = FOLDER + 'net_weights.pth'   
+PATH1 = FOLDER + 'net1_weights.pth'
+PATH2 = FOLDER + 'net2_weights.pth'
+
 
 
 
@@ -42,9 +45,9 @@ n1 = Net()
 n2 = Net()
 
 #load parameters from previous training rounds
-if loadP == 0:
-    n1.load_state_dict(torch.load(PATH))
-    n2.load_state_dict(torch.load(PATH))
+if loadP == 1:
+    n1.load_state_dict(torch.load(PATH1))
+    n2.load_state_dict(torch.load(PATH2))
     print('Loaded model parameters from {}'.format(FOLDER))
 
 #optimisers and losses
@@ -62,11 +65,11 @@ loss2 = nn.MSELoss()
 start = time.time()
 for i in range(epoch):
 
-    id1, id2 = [0, 3, 4], [1, 2, 5]       #train with different combinations than
-    p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)#[0,2,4] and [1,3,5]
+    id1, id2 = [0, 2, 4], [1, 3, 5]
+    p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     p2 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     with torch.no_grad():
-        for k in range(13):
+        for k in range(12):
             if k in id1:
                 p1[k] = 1
             elif k in id2:
@@ -148,8 +151,8 @@ for i in range(epoch):
             Q2 = out2.clone()
         q1 = n1(P1)
         q2 = n2(P2)
-        Q1[a1] += alpha * ( y * torch.max(q1).item() - Q1[a1])
-        Q2[a2] += alpha * ( y * torch.max(q2).item() - Q2[a2])
+        Q1[a1] += alpha * ( r1 + y * torch.max(q1).item() - Q1[a1])
+        Q2[a2] += alpha * ( r2 + y * torch.max(q2).item() - Q2[a2])
         l1 = loss1(Q1, out1)
         l2 = loss2(Q2, out2)
         l1.backward()
@@ -160,10 +163,10 @@ for i in range(epoch):
         p1.requires_grad, p2.requires_grad = True, True
         
     if i % printEpoch == 0:
-        print('Epoch {} of {}\t\tElapsed time: {:.3} s'.format(i,epoch, time.time()-start))
+        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start))
     if i  % savingEpoch == 0:
-        torch.save(n1.state_dict(), PATH)
-        torch.save(n2.state_dict(), PATH)
+        torch.save(n1.state_dict(), PATH1)
+        torch.save(n2.state_dict(), PATH2)
         print('Saved weight files in {}'.format(FOLDER))
 
 
@@ -172,17 +175,21 @@ for i in range(epoch):
         
 #AFTER THE GAME
 #save params
-torch.save(n1.state_dict(), PATH)
-torch.save(n2.state_dict(), PATH)
+torch.save(n1.state_dict(), PATH1)
+torch.save(n2.state_dict(), PATH2)
 print('Finished learning! Saved weight files in {}'.format(FOLDER))
 
 #calculate total training time
 elapsed = time.time() - start
-print('\n\nTotal training time: {:.3} s'.format(elapsed))
+print('\n\nTotal training time: {:.6} s'.format(elapsed))
 
 #plot the reward
 r1 = np.array(rew1)
 r2 = np.array(rew2)
+plt.subplot(121)
 plt.plot(r1,'-b')
 plt.plot(r2,'-r')
+plt.subplot(122)
+plt.plot(np.cumsum(r1),'-b')
+plt.plot(np.cumsum(r2),'-r')
 plt.show()
