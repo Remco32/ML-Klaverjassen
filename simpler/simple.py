@@ -12,17 +12,15 @@ import pdb
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 300000, 30000, 6000
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 3000000, 30000, 6000
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
 
 #load parameters?
-loadP = 0
+loadP = 1
 #to save the weights
 FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
-PATH1 = FOLDER + 'net1_weights.pth'
-PATH2 = FOLDER + 'net2_weights.pth'
-
+PATH = FOLDER + 'net_weights.pth'   
 
 
 
@@ -44,9 +42,9 @@ n1 = Net()
 n2 = Net()
 
 #load parameters from previous training rounds
-if loadP == 1:
-    n1.load_state_dict(torch.load(PATH1))
-    n2.load_state_dict(torch.load(PATH2))
+if loadP == 0:
+    n1.load_state_dict(torch.load(PATH))
+    n2.load_state_dict(torch.load(PATH))
     print('Loaded model parameters from {}'.format(FOLDER))
 
 #optimisers and losses
@@ -64,11 +62,11 @@ loss2 = nn.MSELoss()
 start = time.time()
 for i in range(epoch):
 
-    id1, id2 = [0, 2, 4], [1, 3, 5]
-    p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)
+    id1, id2 = [0, 3, 4], [1, 2, 5]       #train with different combinations than
+    p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)#[0,2,4] and [1,3,5]
     p2 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     with torch.no_grad():
-        for k in range(12):
+        for k in range(13):
             if k in id1:
                 p1[k] = 1
             elif k in id2:
@@ -162,10 +160,10 @@ for i in range(epoch):
         p1.requires_grad, p2.requires_grad = True, True
         
     if i % printEpoch == 0:
-        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start))
+        print('Epoch {} of {}\t\tElapsed time: {:.3} s'.format(i,epoch, time.time()-start))
     if i  % savingEpoch == 0:
-        torch.save(n1.state_dict(), PATH1)
-        torch.save(n2.state_dict(), PATH2)
+        torch.save(n1.state_dict(), PATH)
+        torch.save(n2.state_dict(), PATH)
         print('Saved weight files in {}'.format(FOLDER))
 
 
@@ -174,13 +172,13 @@ for i in range(epoch):
         
 #AFTER THE GAME
 #save params
-torch.save(n1.state_dict(), PATH1)
-torch.save(n2.state_dict(), PATH2)
+torch.save(n1.state_dict(), PATH)
+torch.save(n2.state_dict(), PATH)
 print('Finished learning! Saved weight files in {}'.format(FOLDER))
 
 #calculate total training time
 elapsed = time.time() - start
-print('\n\nTotal training time: {:.6} s'.format(elapsed))
+print('\n\nTotal training time: {:.3} s'.format(elapsed))
 
 #plot the reward
 r1 = np.array(rew1)
