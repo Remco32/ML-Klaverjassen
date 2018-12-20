@@ -19,21 +19,30 @@
 import random as rnd
 import deck
 import table
+import learn
+import torch
+import torch.nn as nn
 
 class Player:
 
     # player 0 and 2 are in team 0; player 1 and 3 are in team 1 
-    def __init__(self, number):  #number is an integer from 0 to 3
+    def __init__(self, number, alpha, y):  #number is an integer from 0 to 3
         self.position = number
         self.hand = []
         if number % 2 == 0:
             self.team = 0
         else:
             self.team = 1
+            
+        self.alpha  = alpha    #learning rate
+        self.y      = y        #discount rate
+        self.net    = learn.Net(67)     #need 3 more features to take into account the played cards so it's gon be 70
+        self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
+        self.loss   = nn.MSELoss()
+        self.reward = []
 
         
-    def Pop(self):
-        self.subHand = [c for c in self.hand if c.isPlayable == True]
+    def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
         self.hand.remove(popped)
         return popped
@@ -45,7 +54,8 @@ class Player:
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
                 c.isPlayable = True
-            self.played = self.Pop()
+            self.subHand = [c for c in self.hand if c.isPlayable == True]
+            self.played = self.NetPlay(tab, d)[0]
             for c in self.hand:
                 c.isPlayable = False
                         
@@ -59,19 +69,49 @@ class Player:
             else:
                 print('Unknown rules. Input either \'Simple\', \'Amsterdam\' or \'Rotterdam\'')
         return self.played             #self.played is assigned within each of the play methods below
-    
+
+        
+    def NetPlay(self, tbl, dck):
+        #function to play a card using reinforcement learning
+        self.feat = self.net.CreatePlayFeaturesVector(self, tbl, dck)
+        
+        self.idPlayable = []
+        for i,c in enumerate(self.feat):
+            while i < 32:   #only the hand
+                if c == 1:
+                    for card in self.subHand:
+                        if card.index == i
+                            self.idPlayable.append(i)
+                            
+        self.opt.zero_grad()
+        played = self.net(self.feat)
+        idP = played.argmax().item()
+
+        while idP not in self.idPlayable:      #if he choses a card he can't play (either cause he doesn't have it or for the rules)
+            r = -1
+            self.reward.append(r)
+            with torch.no_grad():
+                Q = played.clone()
+                Q[idP] += self.alpha * (r +  self.y * played.max().item() - Q[idP])
+            l = self.loss(Q, played)
+            l.backward()
+            self.opt.step()
+            self.opt.zero_grad()
+            played = self.net(self.feat)
+            idP = played.argmax().item()
+
+        for c in self.subHand:
+            if c.index == idP
+                cc = c
+        return c, idP
+
+        #the rest of the training part (when the card has been played) needs to be done in table.py
+        #in the method table.PlayCards() where each player plays a card and rewards are calculated
+
+        
     def SimplePlay(self, tab, d):
         playableCards = 0
         
-        """
-           New play routine which should fit better the machine learning implementation:
-           the hand is scanned and if the cards are playable their data member .isPlayable
-           becomes true, otherwise it is kept false. Then the card is played from the subset
-           of cards which have .isPlayed == True. This last step will be changed when the
-           RL algorithms are implemented, so for now it makes no difference, but having
-           the playability as a property of the card is useful.
-        """
-
         for c in self.hand:                     #first try to flag cards in suit as playable
             if c.suit == tab.leadingSuit:
                 c.isPlayable = True
@@ -87,7 +127,10 @@ class Player:
             for c in self.hand:
                 c.isPlayable = True 
 
-        self.played = self.Pop()
+        self.subHand = [c for c in self.hand if c.isPlayable == True]
+        tmp = self.NetPlay(tab,d)
+        self.played = tmp[0]     
+        self.playedID =tmp[1]
         
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
