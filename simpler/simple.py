@@ -7,20 +7,27 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import pdb
-
-
-
-
+import os # For path creation for saving files
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 30000, 3000, 600
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 1000, 3000, 600
 rew1, rew2 = [], []
-r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
+r1Win, r1Lose, r2Win, r2Lose = 3, -0.25, 2, -0.5
+
+# Print time each epoch?
+printElapsedTimeEachEpoch = True
 
 #load parameters?
 loadP = 1
 #to save the weights
-FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+#FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+FOLDER = os.path.dirname(__file__) + '/weights/' # Using relative path
+
+# Check if folder exists, to avoid errors
+if not os.path.exists(FOLDER):
+    os.makedirs(FOLDER)
+
+
 PATH1 = FOLDER + 'net1_weights.pth'
 PATH2 = FOLDER + 'net2_weights.pth'
 
@@ -62,8 +69,9 @@ loss2 = nn.MSELoss()
 
 
 #THE GAME
-start = time.time()
+start_first_epochs = time.time()
 for i in range(epoch):
+    start_current_epoch = time.time()
 
     id1, id2 = [0, 2, 4], [1, 3, 5]
     p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)
@@ -163,14 +171,16 @@ for i in range(epoch):
         p1.requires_grad, p2.requires_grad = True, True
         
     if i % printEpoch == 0:
-        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start))
+        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start_first_epochs))
     if i  % savingEpoch == 0:
         torch.save(n1.state_dict(), PATH1)
         torch.save(n2.state_dict(), PATH2)
         print('Saved weight files in {}'.format(FOLDER))
 
 
-        
+    # Show time spent
+    if printElapsedTimeEachEpoch:
+        print('Elapsed time this epoch: {:.3}' .format(time.time() - start_current_epoch) + ' seconds')
 
         
 #AFTER THE GAME
@@ -180,8 +190,8 @@ torch.save(n2.state_dict(), PATH2)
 print('Finished learning! Saved weight files in {}'.format(FOLDER))
 
 #calculate total training time
-elapsed = time.time() - start
-print('\n\nTotal training time: {:.6} s'.format(elapsed))
+elapsed = time.time() - start_first_epochs
+print('\n\nTotal training time: {:.6}'.format(elapsed))
 
 #plot the reward
 r1 = np.array(rew1)
