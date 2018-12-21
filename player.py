@@ -80,7 +80,7 @@ class Player:
             while i < 32:   #only the hand
                 if c == 1:
                     for card in self.subHand:
-                        if card.index == i
+                        if card.index == i:
                             self.idPlayable.append(i)
                             
         self.opt.zero_grad()
@@ -101,9 +101,9 @@ class Player:
             idP = played.argmax().item()
 
         for c in self.subHand:
-            if c.index == idP
+            if c.index == idP:
                 cc = c
-        return c, idP
+        return cc, idP
 
         #the rest of the training part (when the card has been played) needs to be done in table.py
         #in the method table.PlayCards() where each player plays a card and rewards are calculated

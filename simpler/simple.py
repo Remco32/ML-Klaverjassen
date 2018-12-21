@@ -10,15 +10,16 @@ import pdb
 import os # For path creation for saving files
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 1000, 3000, 600
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 10, 3000, 600
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 3, -0.25, 2, -0.5
+#TODO discount factor (the y) could be set to zero, if the reward is only given at the end of a round, and not after a trick.
 
 # Print time each epoch?
 printElapsedTimeEachEpoch = True
 
 #load parameters?
-loadP = 1
+loadP = 0
 #to save the weights
 #FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
 FOLDER = os.path.dirname(__file__) + '/weights/' # Using relative path
