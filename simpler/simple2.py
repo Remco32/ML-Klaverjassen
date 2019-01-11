@@ -7,15 +7,16 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import pdb
+import random as rnd
 
 
 
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 90000, 3000, 600
+alpha, y, epoch, savingEpoch, printEpoch = 0.1, 0.9, 300000, 3000, 60
 rew1, rew2 = [], []
-r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
+r1Win, r1Lose, r2Win, r2Lose = 1, -0.5, 1, -0.5
 
 #load parameters?
 loadP = 1
@@ -43,8 +44,7 @@ class Net(nn.Module):
 #nets for the players   
 n1 = Net()
 n2 = Net()
-
-#load parameters from previous training rounds
+1#load parameters from previous training rounds
 if loadP == 1:
     n1.load_state_dict(torch.load(PATH1))
     n2.load_state_dict(torch.load(PATH2))
@@ -65,7 +65,14 @@ loss2 = nn.MSELoss()
 start = time.time()
 for i in range(epoch):
 
-    id1, id2 = [0,2,4], [1,3,5]
+    ID = [0,1,2,3,4,5]
+    id1 = []
+    for i in range(3):
+        a = rnd.choice(ID)
+        id1.append(a)
+        ID.remove(a)
+    id2 = [a for a in ID]
+    print(id1, id2)
     p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     p2 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     with torch.no_grad():
@@ -164,11 +171,11 @@ for i in range(epoch):
         
     if i % printEpoch == 0:
         print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start))
-    if i  % savingEpoch == 0:
-        torch.save(n1.state_dict(), PATH1)
-        torch.save(n2.state_dict(), PATH2)
-        print('Saved weight files in {}'.format(FOLDER))
+    torch.save(n1.state_dict(), PATH1)
+    torch.save(n2.state_dict(), PATH2)
+    print('Saved weight files in {}'.format(FOLDER))
 
+        
 
         
 

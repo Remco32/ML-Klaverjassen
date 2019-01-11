@@ -45,7 +45,7 @@ n = Net()
 #load parameters from previous training rounds
 if loadP == 1:
     n.load_state_dict(torch.load(PATH))
-    print('Loaded model parameters from {}'.format(FOLDER))
+    print('Loaded model parameters from {}'.format(PATH))
 
 
 
