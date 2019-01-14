@@ -1,8 +1,7 @@
 """
 Simple version of the game implementing exploration.
 """
-
-
+import os
 import time
 import numpy as np
 import matplotlib
@@ -12,20 +11,22 @@ import torch
 import torch.nn as nn
 import pdb
 import random as rnd
-
-
+#from exploration_strategies import *
+import exploration_strategies as explStr
 
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 30000, 3000, 600, 0.1, 0.99
+alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 30000, 3000, 1, 0.1, 0.99
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 1, -0.5, 1, -0.5
 
 #load parameters?
 loadP = 1
 #to save the weights
-FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
+FOLDER = os.path.dirname(__file__) + '/weights/' # Using relative path
+
+#FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
 PATH1 = FOLDER + 'net1_weights.pth'
 PATH2 = FOLDER + 'net2_weights.pth'
 
@@ -45,7 +46,7 @@ class Net(nn.Module):
         x = self.conn2(x)
         return x
 
-#nets for the players   
+#nets for the players
 n1 = Net()
 n2 = Net()
 1#load parameters from previous training rounds
@@ -67,7 +68,7 @@ loss2 = nn.MSELoss()
 
 #THE GAME
 start = time.time()
-for i in range(epoch):
+for currentEpoch in range(epoch):
 
     ID = [0,1,2,3,4,5]
     id1 = []
@@ -91,11 +92,14 @@ for i in range(epoch):
 
         opt1.zero_grad()
         out1 = n1(p1)
-        r = rnd.randrange(1)    #check whether to explore or not        
+        """
+        r = rnd.randrange(1) #TODO only generates a 0    #check whether to explore or not
         if r > eps:
             a1   = out1.argmax().item()
         elif r < eps:
             a1 = rnd.choice(id1)
+            """
+        a1 = explStr.diminishingEpsilonGreedy(out1.argmax().item(), eps, id1, currentEpoch, epoch)
            
         while a1 not in id1:
             r1 = -1
@@ -183,10 +187,12 @@ for i in range(epoch):
         p1, p2 = P1.clone(), P2.clone()
         p1.requires_grad, p2.requires_grad = True, True
 
+
+
     #print(i, '\n')
-    if i % printEpoch == 0:
-        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(i,epoch, time.time()-start))
-    if i % savingEpoch == 0:
+    if currentEpoch % printEpoch == 0:
+        print('Epoch {} of {}\t\tElapsed time: {:.6} s'.format(currentEpoch, epoch, time.time() - start))
+    if currentEpoch % savingEpoch == 0:
         torch.save(n1.state_dict(), PATH1)
         torch.save(n2.state_dict(), PATH2)
         print('Saved weight files in {}'.format(FOLDER))

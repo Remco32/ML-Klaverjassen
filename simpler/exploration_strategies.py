@@ -2,7 +2,7 @@ import random as rnd
 
 #TODO write a main class for handling all sorts of exploration strategies, i.e. you only have to call the main function of this file, not a sub function
 
-def diminishingEpsilonGreedy(greedyActionIndex, epsilon, sizeOfPlayerHand, currentEpoch, totalEpocs):
+def diminishingEpsilonGreedy(greedyAction, epsilon, playerHand, currentEpoch, totalEpocs):
 # Diminishing epsilon-Greedy
 
     # Set current exploration rate
@@ -16,12 +16,12 @@ def diminishingEpsilonGreedy(greedyActionIndex, epsilon, sizeOfPlayerHand, curre
         explorationRate = minimumExplorationRate
 
     # Rest of the algorithm is essentially epsilon-greedy
-    return epsilonGreedy(greedyActionIndex, explorationRate, sizeOfPlayerHand)
+    return epsilonGreedy(greedyAction, explorationRate, playerHand)
 
 
-def epsilonGreedy(greedyActionIndex, explorationRate, sizeOfPlayerHand):
-    random = rnd.uniform(0, 1)
-    if random < explorationRate:
-        return rnd.choice(sizeOfPlayerHand) #size instead of actual hand so so we can return an index
+def epsilonGreedy(greedyAction, explorationRate, playerHand):
+    randomValue = rnd.uniform(0, 1) #between 0 and 1, float
+    if randomValue < explorationRate:
+        return rnd.choice(playerHand)
     else:
-        return greedyActionIndex
+        return greedyAction
