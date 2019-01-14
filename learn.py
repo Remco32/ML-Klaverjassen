@@ -29,11 +29,11 @@ class Net(nn.Module):
         self.conn2 = nn.Linear(50,50)
         self.conn3 = nn.Linear(50, 32)                 #32 is the deck size
 
-    def forward(self, tens):
-        tens = torch.sigmoid(self.conn1(tens))   #pass the input layer to the first hidden layer through connection 1 defined in __init__
-        tens = torch.sigmoid(self.conn2(tens))   #pass the first hidden layer to the second hidden layer through connection 2
-        tens = self.conn3(tens)    #pass the second hidden layer to the output layer through connection 3 without any activation function
-        return tens
+    def forward(self, tensor):
+        tensor = torch.sigmoid(self.conn1(tensor))   #pass the input layer to the first hidden layer through connection 1 defined in __init__
+        tensor = torch.sigmoid(self.conn2(tensor))   #pass the first hidden layer to the second hidden layer through connection 2
+        tensor = self.conn3(tensor)    #pass the second hidden layer to the output layer through connection 3 without any activation function
+        return tensor
 
 
 
@@ -78,7 +78,7 @@ class Net(nn.Module):
 
 
 
-        self.featuresVector = torch.tensor(tmp)  # since pytorch wants tensors as inputs;
+        self.featuresVector = torch.tensor(tmp, dtype=torch.float)  # since pytorch wants tensors as inputs;
         self.nFeatures = len(tmp)
         return self.featuresVector
 
@@ -101,6 +101,7 @@ class Net(nn.Module):
         - which card were played and by who (32 numbers from 0 to 4: 0 not played, 1,2,3,4 number of player)
         - round scores (2 numbers)
         - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
+        - TODO add the cards currently on table
         (- round number and game scores) optional
         """
         tmp = []
@@ -127,7 +128,7 @@ class Net(nn.Module):
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
         #tmp.append(who chose the trump) #TODO implement reading the actual trump value
                 
-        self.featuresVector = torch.tensor(tmp)     #since pytorch wants tensors as inputs;
+        self.featuresVector = torch.tensor(tmp, dtype=torch.float)     #since pytorch wants tensors as inputs;
         self.nFeatures = len(tmp)
         return self.featuresVector
 

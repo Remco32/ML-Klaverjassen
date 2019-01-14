@@ -41,12 +41,12 @@ class Player:
         self.loss   = nn.MSELoss()
         self.reward = []
 
-        
+    """    
     def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
         self.hand.remove(popped)
         return popped
-
+    """
         
     # method to play a card from the hand.
     def Play(self, tab, d):  #tab is the table object for the rules, d is the deck object for the trump suit
@@ -56,6 +56,7 @@ class Player:
                 c.isPlayable = True
             self.subHand = [c for c in self.hand if c.isPlayable == True]
             self.played = self.NetPlay(tab, d)[0]
+            self.hand.remove(self.played)
             for c in self.hand:
                 c.isPlayable = False
                         
@@ -74,11 +75,10 @@ class Player:
     def NetPlay(self, tbl, dck):
         #function to play a card using reinforcement learning
         self.feat = self.net.CreatePlayFeaturesVector(self, tbl, dck)
-        
         self.idPlayable = []
         for i,c in enumerate(self.feat):
-            while i < 32:   #only the hand
-                if c == 1:
+            if i < 32:   #only the hand
+                if c.item() == 1:
                     for card in self.subHand:
                         if card.index == i:
                             self.idPlayable.append(i)
@@ -131,6 +131,8 @@ class Player:
         tmp = self.NetPlay(tab,d)
         self.played = tmp[0]     
         self.playedID =tmp[1]
+
+        self.hand.remove(self.played)
         
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
