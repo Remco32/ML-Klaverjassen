@@ -13,11 +13,10 @@ import learn
 
 class Table:
 
-    def __init__(self, Round, rules):       #rules is either 'Simple, 'Amsterdam' or 'Rotterdam'. So far only 'Simple' rules implemented
-        self.nRound   = Round               #a game is made of 16 rounds
+    def __init__(self, Round, rules, alpha, y):    #now all players have same learning rate and y. For exp. purposes it might be interesting to have different values
         self.playerID = 0,1,2,3             #the tuple's index is the player's name 
         self.cycleID = self.playerID * 2    #useful to cycle from player 4 to 1
-        self.players  =[player.Player(i) for i in self.playerID]
+        self.players  =[player.Player(i, alpha, y) for i in self.playerID]
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
         self.rules = rules
         self.roundScore = [0, 0]
