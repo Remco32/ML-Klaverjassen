@@ -18,7 +18,7 @@ import random as rnd
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 30000, 3000, 600, 0.1, 0.99
+alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 300000, 3000, 600, 0.1, 0.99
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 1, -0.5, 1, -0.5
 
