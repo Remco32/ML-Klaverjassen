@@ -17,34 +17,47 @@ import deck
 import random as rnd
 import learn
 
-t = table.Table(1,'Simple', 0.1, 0.9)
-d = deck.Deck()
-#l = learn.Learn()
-##print('\nRound ', t.nRound) 
-##print('PlayerIDs ', t.playerID)
-##print('cycleIDs ', t.cycleID)
-##print('Players ', t.players)
-print('Dealer ', t.dealer)
-##print('Ordered players ', t.orderedPlayers)   
-print('First player ', t.WhoPlays()[1])
+epochs, printEpoch, saveEpoch = 100, 1, 10
 
-d.SetTrump(rnd.choice(d.suits))       #randomly chosen trump
-d.DivideCards()                
-##print('Divided cards', d.dividedCards)   ##method works
-print('Trump suit', d.trumpSuit)
+"""
+STEPS TO UNDERTAKE TO PROPERLY RUN THE PROGRAM:
+
+Initialise the table object: it automatically initialises the player objects, which in turn initialise the neural networks.
+Initialise the deck, which in turn already shuffles.
+Set the trump suit.
+Divide the cards.
+Deal the cards to the players; this also creates the starting feature vectors for each player once they receive their hand.
+Print the hands of the players to check the game from command line.
+
+A round in the game: 
+until the players have cards in the hands, they play a card. If they select an illegal move, backprop is done internally until they select a legal one.
+After all players have played their cards, a control printout is performed.
+The trick winner is determined, rewards are assigned and then the table object performs the backprop for each player.
+
+Multiple rounds in the game to properly train the network. Same as above, repeated for a number of epochs, with some more control printouts.
+"""
+
+for currentEpoch in range(epochs):
+    
+    d.SetTrump(rnd.choice(d.suits))  
+    d.DivideCards()                
+    print('Trump suit', d.trumpSuit)
+    t.DealCards(d)
+    h = [p.hand for p in t.players]
+    for i in (0,1,2,3):
+        ht = [c.CardAsTuple() for c in h[i]]
+        print('Hand', i, ht)
+    
+    while t.players[0].hand != []:
+        t.PlayCards(d)
+        #tmp = t.playedTuples       
+        #print('Played Cards', tmp)
+        winner = t.WhoWinsTrick(d)
+        t.DoBackprop()
+
+    if currentEpoch % printEpoch == 0: print("Epoch {} of {}".format(currentEpoch, epochs))
+    if currentEpoch % saveEpoch  == 0:
+        pass #save the network parameters; write a method in table.py
 
 
-t.DealCards(d)
-h = [p.hand for p in t.players]
-for i in (0,1,2,3):
-    ht = [c.CardAsTuple() for c in h[i]]
-    print('Hand', i, ht)
-
-#very simple routine in which only the values count, with no other rules
-while t.players[0].hand != []:
-    t.PlayCards(d)
-    tmp = t.playedTuples           #to check if WhoWinsTrick works
-    print('Played Cards', tmp)
-    print('Winner player', t.WhoWinsTrick(d).position)
-
-    print('Scores', t.roundScore)
+print("Training completed succesfully!")

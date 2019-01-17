@@ -9,6 +9,7 @@ import deck
 import player
 import random as rnd
 import learn
+import torch
 
 
 class Table:
@@ -52,6 +53,7 @@ class Table:
         [p.hand.clear() for p in self.players]
         for p in self.orderedPlayers:
             p.hand = d.HandOutCards(self.orderedPlayers.index(p))
+            p.feat = p.net.CreatePlayFeaturesVector(p, self, d)    #create the feature vector when the cards are dealt
         
 
     def PlayCards(self, d):     #d is the deck object
@@ -70,7 +72,12 @@ class Table:
             
         self.playedTuples = [c.CardAsTuple() for c in self.playedCards] #to check from the command line if the algorithm works 
 
-        
+
+    """
+    For now we couldn't think of a way to implement Q-learning after each round is finished, since there is no next-state to go to
+    after the round is over. While we think about that, we implement Q-learning after each trick with reward +1 to the winning team
+    and reward -1 to the losing team.
+    """    
     def WhoWinsTrick(self, d):    #d is the deck object
         trickPoints = 0
         self.winValue = 0
@@ -97,13 +104,47 @@ class Table:
         self.winnerPlayer = self.orderedPlayers[tmp]
         self.winnerPlayerID = self.players.index(self.winnerPlayer)
         self.roundScore[self.winnerPlayer.team] += trickPoints    #trick points assignment
+        for p in self.players:
+            if p.team == self.winnerPlayer.team:
+                p.reward = 1
+            else:
+                p.reward = -1
+        #self.DoBackprop()      #for now it needs to be called explicitly in flow.py
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
+        print("Winner of the trick is player {}".format(self.winnerPlayer.position))
 
         if self.players[0].hand == []:
             self.roundScore[self.winnerPlayer.team] += 10
             
         
         return self.winnerPlayer
+
+
+    def DoBackprop(self):
+        with torch.no_grad():
+
+            Plist = [f.feat.clone() for f in self.orderedPlayers]
+            P = [torch.tensor(Pl, dtype=torch.float) for Pl in Plist]     #clone the feature vectors to delete played cards
+                
+            for i,feat_vec in enumerate(P):     #for every player's features
+                for j,c in enumerate(feat_vec):         #for every card in the feature vector
+                    if j == self.playedCards[i].index:          #if the card's index is the index of the card played by that player
+                        feat_vec[j] = 0                #set the value to 0
+            q = []
+            Q = [p.output.clone() for p in self.orderedPlayers]    #clone of the output
+        for i,p in enumerate(self.orderedPlayers):                #check simple3.py for reference
+            j = self.playedCards[i].index
+            with torch.no_grad():
+                q.append(p.net(P[i]))                              #output from the new state                        
+                Q[i][j] += p.alpha * (p.reward + p.y * torch.max(q[i]).item() - Q[i][j])       #Q-learning formula 
+            p.l = p.loss(p.output, Q[i]) #compute loss
+            p.opt.zero_grad()
+            p.l.backward()                #do backprop
+            p.opt.step()                  #adjust weights after backprop            
+            p.feat = P[i].clone()            #update the feature vector
+            p.feat.requires_grad = True
+
+
 
     
     def whoWinsRound(self):

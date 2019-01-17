@@ -78,7 +78,7 @@ class Net(nn.Module):
 
 
 
-        self.featuresVector = torch.tensor(tmp, dtype=torch.float)  # since pytorch wants tensors as inputs;
+        self.featuresVector = torch.tensor(tmp, dtype=torch.float, requires_grad=True)  # since pytorch wants tensors as inputs;
         self.nFeatures = len(tmp)
         return self.featuresVector
 
@@ -128,7 +128,7 @@ class Net(nn.Module):
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
         #tmp.append(who chose the trump) #TODO implement reading the actual trump value
                 
-        self.featuresVector = torch.tensor(tmp, dtype=torch.float)     #since pytorch wants tensors as inputs;
+        self.featuresVector = torch.tensor(tmp, dtype=torch.float, requires_grad=True)     #since pytorch wants tensors as inputs;
         self.nFeatures = len(tmp)
         return self.featuresVector
 

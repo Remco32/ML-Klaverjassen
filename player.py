@@ -39,7 +39,7 @@ class Player:
         self.net    = learn.Net(67)     #need 3 more features to take into account the played cards so it's gon be 70
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
-        self.reward = []
+        self.reward = 0
 
     """    
     def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
@@ -74,7 +74,7 @@ class Player:
         
     def NetPlay(self, tbl, dck):
         #function to play a card using reinforcement learning
-        self.feat = self.net.CreatePlayFeaturesVector(self, tbl, dck)
+        #self.feat = self.net.CreatePlayFeaturesVector(self, tbl, dck)   #called in table.DealCards
         self.idPlayable = []
         for i,c in enumerate(self.feat):
             if i < 32:   #only the hand
@@ -83,22 +83,21 @@ class Player:
                         if card.index == i:
                             self.idPlayable.append(i)
                             
-        self.opt.zero_grad()
-        played = self.net(self.feat)
-        idP = played.argmax().item()
+        self.output = self.net(self.feat)
+        idP = self.output.argmax().item()
 
         while idP not in self.idPlayable:      #if he choses a card he can't play (either cause he doesn't have it or for the rules)
-            r = -1
-            self.reward.append(r)
+            r = -0.5
+            self.reward = -0.5
             with torch.no_grad():
-                Q = played.clone()
-                Q[idP] += self.alpha * (r +  self.y * played.max().item() - Q[idP])
-            l = self.loss(Q, played)
+                Q = self.output.clone()
+                Q[idP] += self.alpha * (r +  self.y * self.output.max().item() - Q[idP])
+            l = self.loss(Q, self.output)
+            self.opt.zero_grad()
             l.backward()
             self.opt.step()
-            self.opt.zero_grad()
-            played = self.net(self.feat)
-            idP = played.argmax().item()
+            self.output = self.net(self.feat)
+            idP = self.output.argmax().item()
 
         for c in self.subHand:
             if c.index == idP:
