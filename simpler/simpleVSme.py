@@ -16,6 +16,7 @@ import pdb
 
 
 
+alpha, y = 0.1, 0.9
 
 #load parameters?
 loadP = 1
@@ -47,6 +48,8 @@ if loadP == 1:
     n.load_state_dict(torch.load(PATH))
     print('Loaded model parameters from {}'.format(PATH))
 
+opt  = torch.optim.SGD(n.parameters(), lr = alpha)
+loss = nn.MSELoss()
 
 
 
@@ -55,9 +58,8 @@ start = time.time()
 rounds = input('How many rounds?  --->')
 for j in range(int(rounds)):
     
-    idP = [1, 2, 5]       #for now, since I only trained the algorithm with these
-    cards = [0, 3, 4]     #cards, he has no adaptability. Useful to train with other
-                          #combinations as well
+    idP = [3, 4, 5]       
+    cards = [0, 1, 2]     
     p = torch.zeros(13, dtype=torch.float, requires_grad=True)
     for k in range(13):
             if k in idP:
@@ -70,14 +72,28 @@ for j in range(int(rounds)):
             c = input('Invalid choice. Choose among {}  --->'.format(cards))
             
         p[6] = int(c)
+        opt.zero_grad()
         pl = n(p)
-        played = pl.argmax().item()
+        played = pl.argmax().item() #TODO: add backpropagation when an illegal card is selected; not working so far
+
+        while played not in idP:
+            r = -1
+            with torch.no_grad():
+                Q = pl.clone()
+                Q[played] += alpha * ( r + y * torch.max(pl).item() - Q[played])
+            l = loss(Q, pl)
+            l.backward()
+            opt.step()
+            opt.zero_grad()
+            pl = n(p)
+            played   = pl.argmax().item()
         print(played)     #all the updates to the hand are to be done after the
-                          #card has been payed (as in simple.py) and it makes sense
+                          #card has been played (as in simple.py) and it makes sense
                           #given the interpretation of the features
-        p[played]     = 0
-        p[7 + played] = 1
-        p[7 + int(c)] = 2
+        with torch.no_grad():            
+            p[played]     = 0
+            p[7 + played] = 1
+            p[7 + int(c)] = 2
         idP.remove(played)
         cards.remove(int(c))
  

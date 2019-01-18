@@ -18,12 +18,12 @@ import random as rnd
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 300000, 3000, 600, 0.1, 0.99
+alpha, y, epoch, savingEpoch, printEpoch, eps, decay = 0.1, 0.9, 30000, 3000, 60, 0.05, 0.99
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 1, -0.5, 1, -0.5
 
 #load parameters?
-loadP = 1
+loadP = 0
 #to save the weights
 FOLDER = '/Users/tommi/github/ML-Klaverjassen/simpler/weights/'
 PATH1 = FOLDER + 'net1_weights.pth'
@@ -91,12 +91,14 @@ for i in range(epoch):
 
         opt1.zero_grad()
         out1 = n1(p1)
-        r = rnd.randrange(1)    #check whether to explore or not        
+        """
+        r = rnd.random()    #check whether to explore or not        
         if r > eps:
             a1   = out1.argmax().item()
         elif r < eps:
             a1 = rnd.choice(id1)
-           
+        """
+        a1 = out1.argmax().item()
         while a1 not in id1:
             r1 = -1
             rew1.append(r1)
@@ -120,12 +122,14 @@ for i in range(epoch):
 
         opt2.zero_grad()
         out2 = n2(p2)
-        r = rnd.randrange(1)
+        """
+        r = rnd.random()
         if r > eps:
             a2   = out2.argmax().item()
         elif r < eps:
             a2 = rnd.choice(id2)
-            
+        """
+        a2 = out2.argmax().item()
         while a2 not in id2:
             r2 = -1
             rew2.append(r2)
@@ -170,10 +174,10 @@ for i in range(epoch):
         with torch.no_grad():
             Q1 = out1.clone()
             Q2 = out2.clone()
-        q1 = n1(P1)
-        q2 = n2(P2)
-        Q1[a1] += alpha * ( r1 + y * torch.max(q1).item() - Q1[a1])
-        Q2[a2] += alpha * ( r2 + y * torch.max(q2).item() - Q2[a2])
+            q1 = n1(P1)
+            q2 = n2(P2)
+            Q1[a1] += alpha * ( r1 + y * torch.max(q1).item() - Q1[a1])
+            Q2[a2] += alpha * ( r2 + y * torch.max(q2).item() - Q2[a2])
         l1 = loss1(Q1, out1)
         l2 = loss2(Q2, out2)
         l1.backward()

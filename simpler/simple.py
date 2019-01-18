@@ -1,4 +1,3 @@
-
 import time
 import numpy as np
 import matplotlib
@@ -13,7 +12,8 @@ import pdb
 
 
 #VARIABLES
-alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 90000, 3000, 600
+alpha, y, epoch, savingEpoch, printEpoch = 0.01, 0.9, 10000, 30000, 600
+00
 rew1, rew2 = [], []
 r1Win, r1Lose, r2Win, r2Lose = 2, -0.3, 2, -0.3
 
@@ -65,7 +65,7 @@ loss2 = nn.MSELoss()
 start = time.time()
 for i in range(epoch):
 
-    id1, id2 = [0,2,4], [1,3,5]
+    id1, id2 = [0, 2, 4], [1, 3, 5]
     p1 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     p2 = torch.zeros(13, dtype=torch.float, requires_grad=True)
     with torch.no_grad():
@@ -151,8 +151,8 @@ for i in range(epoch):
             Q2 = out2.clone()
         q1 = n1(P1)
         q2 = n2(P2)
-        Q1[a1] += alpha * ( r1 + y * torch.max(q1).item() - Q1[a1])
-        Q2[a2] += alpha * ( r2 + y * torch.max(q2).item() - Q2[a2])
+        Q1[a1] += alpha * ( y * torch.max(q1).item() - Q1[a1])
+        Q2[a2] += alpha * ( y * torch.max(q2).item() - Q2[a2])
         l1 = loss1(Q1, out1)
         l2 = loss2(Q2, out2)
         l1.backward()
@@ -186,10 +186,6 @@ print('\n\nTotal training time: {:.6} s'.format(elapsed))
 #plot the reward
 r1 = np.array(rew1)
 r2 = np.array(rew2)
-plt.subplot(121)
 plt.plot(r1,'-b')
 plt.plot(r2,'-r')
-plt.subplot(122)
-plt.plot(np.cumsum(r1),'-b')
-plt.plot(np.cumsum(r2),'-r')
 plt.show()
