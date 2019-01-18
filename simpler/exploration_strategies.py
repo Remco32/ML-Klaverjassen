@@ -1,6 +1,9 @@
 import random as rnd
+import math
 
 #TODO write a main class for handling all sorts of exploration strategies, i.e. you only have to call the main function of this file, not a sub function
+
+
 
 def diminishingEpsilonGreedy(greedyAction, epsilon, playerHand, currentEpoch, totalEpocs):
 # Diminishing epsilon-Greedy
@@ -19,7 +22,7 @@ def diminishingEpsilonGreedy(greedyAction, epsilon, playerHand, currentEpoch, to
 def epsilonGreedy(greedyAction, explorationRate, playerHand):
     randomValue = rnd.uniform(0, 1) #between 0 and 1, float
     if randomValue < explorationRate:
-        return rnd.choice(playerHand)
+        return rnd.choice(playerHand) # pick random option #TODO could pick illegal action
     else:
         return greedy(greedyAction)
     
@@ -27,3 +30,36 @@ def epsilonGreedy(greedyAction, explorationRate, playerHand):
 def greedy(greedyAction):
     return greedyAction
 
+#Max-Boltzmann takes a distribution of all possible actions, and assigns probabilities to these actions. This stops the
+# top-most action to be overly-dominant, which isn't a good exploration strategy to begin with.
+
+#See also http://fse.studenttheses.ub.rug.nl/15450/ and https://www.cs.mcgill.ca/~cs526/roger.pdf for pseudocode and the Boltzmann equation
+
+#TODO NOTE! Untested: PyTorch with CUDA is causing me blue screens. That has to be resolved before I can test the code thoroughly.
+
+def maxBoltzmann(explorationRate, playerHand, outputLayer):
+    randomValue = rnd.uniform(0, 1) #between 0 and 1, float
+    if randomValue < explorationRate:
+        return rnd.choice(playerHand) # pick random option #TODO could pick illegal action
+    else:
+        boltzmann(outputLayer)
+
+def boltzmann(outputLayer):
+
+    #TODO make temperature dynamic
+    temperature = 0.5
+
+    #Calculate denominator of the Boltzmann function
+    for i in range(outputLayer): #TODO check for off-by-one error
+        denominator =+ math.exp(outputLayer[i] * temperature^(-1))
+
+    probabilities = [] #empty list
+    for i in range(outputLayer): #TODO check for off-by-one error
+        probabilities.append( math.exp(outputLayer[i] * temperature^(-1)) / denominator )
+
+    #Accumulate the probabilities
+
+
+
+#Testing
+testOutputLayer = []
