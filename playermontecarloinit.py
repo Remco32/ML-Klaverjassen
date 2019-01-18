@@ -9,6 +9,8 @@ import pickle
 # creating shift function
 # shift function is needed to obtain orderedplayrounds
 
+exec(open("gamemontecarlo.py").read())
+
 def shift(l, n):    # shift function
     return l[n:] + l[:n]
 
@@ -241,9 +243,9 @@ for i in range(0, Q):                       # here we start running the game 100
                     A.append(mchandsstar[:][k][i])
             else:    # conditions when no trump card is played
               for i in range(0, nrounds):
-                if mchandsstar[:][k][i][0] == otsuit:
+                  if mchandsstar[:][k][i][0] == otsuit:
                     A.append(mchandsstar[:][k][i])
-               if len(A) == 0:
+              if len(A) == 0:
                 for i in range(0, nrounds):
                   if mchandsstar[:][k][i][0] == trumpsuit:
                     A.append(mchandsstar[:][k][i])

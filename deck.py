@@ -56,7 +56,13 @@ class Deck:
         self.shuffledCards = rnd.sample(self.cards, len(self.cards))      #now a copy of the deck is shuffled
         shuffledDeck = [c for c in self.shuffledCards] 
         [self.dividedCards[i].clear() for i in range(4)]
-
+        """
+        self.handP0.append(shuffledDeck[:8])
+        self.handP1.append(shuffledDeck[8:16])
+        self.handP2.append(shuffledDeck[16:24])
+        self.handP3.append(shuffledDeck[24:32])
+        
+        """
         for cardIndex in range(len(shuffledDeck)):
             if cardIndex >= 0 and cardIndex <= 7:
                 self.handP0.append(shuffledDeck[cardIndex])
@@ -66,7 +72,7 @@ class Deck:
                 self.handP2.append(shuffledDeck[cardIndex])
             if cardIndex >= 24 and cardIndex <= 32:
                 self.handP3.append(shuffledDeck[cardIndex])
-
+        
     # A player can request his hand from the deck using this function
     def HandOutCards(self, playerPosition):    
         return self.dividedCards[playerPosition]

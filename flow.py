@@ -39,6 +39,9 @@ Multiple rounds in the game to properly train the network. Same as above, repeat
 
 for currentEpoch in range(epochs):
     
+    d = deck.Deck()
+    t = table.Table(16, 'Simple', 0.01, 0.9)
+    
     d.SetTrump(rnd.choice(d.suits))  
     d.DivideCards()                
     print('Trump suit', d.trumpSuit)
@@ -50,10 +53,11 @@ for currentEpoch in range(epochs):
     
     while t.players[0].hand != []:
         t.PlayCards(d)
-        #tmp = t.playedTuples       
-        #print('Played Cards', tmp)
+        tmp = t.playedTuples       
+        print('Played Cards', tmp)
         winner = t.WhoWinsTrick(d)
         t.DoBackprop()
+        input("\nContinue?")
 
     if currentEpoch % printEpoch == 0: print("Epoch {} of {}".format(currentEpoch, epochs))
     if currentEpoch % saveEpoch  == 0:
