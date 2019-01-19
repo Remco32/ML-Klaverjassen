@@ -11,6 +11,7 @@
 #  - after 16 rounds, count the points for the game
 #
 ###########################################################################
+import os
 
 import table
 import deck
@@ -21,8 +22,16 @@ import time
 epochs, printEpoch, saveEpoch = 1000, 100, 10
 # Load parameters?
 loadP = 0
-PATH = ['/Users/tommi/github/ML-Klaverjassen/weights/player'+str(i)+'_weights.pth' for i in range(4)] 
-print(PATH)
+
+#Create folder if needed
+
+SAVEFOLDER = os.path.dirname(__file__) + '/weights/'
+
+if not os.path.exists(SAVEFOLDER):
+    os.makedirs(SAVEFOLDER)
+
+SAVEFILELIST = ['player' + str(i) + '_weights.pth' for i in range(4)]
+print(SAVEFILELIST)
 
 """
 STEPS TO UNDERTAKE TO PROPERLY RUN THE PROGRAM:
@@ -52,7 +61,7 @@ t = table.Table(16, 'Simple', 0.01, 0.9)
 d = deck.Deck()
 #load parameters here
 if loadP == 1:
-    t.LoadState(PATH)
+    t.LoadState(SAVEFILELIST)
 elif loadP == 0:
     print("Model parameters not loaded")
 
@@ -72,8 +81,8 @@ for currentEpoch in range(epochs):
         t.DoBackprop()
 
     if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, epochs, time.time() - start))
-  #  if currentEpoch == 100:  #can't seem to make it work, I don't understand why
-   #     t.SaveState(PATH)
-    #    print("Saved model parameters")
+    if currentEpoch == 100:  #can't seem to make it work, I don't understand why
+        t.SaveState(SAVEFOLDER)
+        print("Saved model parameters")
 
 print("Training completed succesfully! \tElapsed time: {:.4} s".format(time.time() - start))

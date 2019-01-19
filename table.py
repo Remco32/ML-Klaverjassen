@@ -4,6 +4,7 @@
 #players need to be labeled 0,1,2,3
 #
 #
+import os
 
 import deck
 import player
@@ -58,7 +59,9 @@ class Table:
 
     def SaveState(self, path):
         for player in self.players:
-            torch.save(player.net.state_dict(), path)
+
+            filePath = path + 'player' + str(player.position) + '_weights.pth'
+            torch.save(player.net.state_dict(), filePath)
 
             
     def DealCards(self, d):   #d is the deck object
