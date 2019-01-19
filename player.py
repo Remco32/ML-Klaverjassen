@@ -22,6 +22,7 @@ import table
 import learn
 import torch
 import torch.nn as nn
+import numpy as np
 
 class Player:
 
@@ -82,31 +83,35 @@ class Player:
                     for card in self.subHand:
                         if card.index == i:
                             self.idPlayable.append(i)
-                            
+        print(self.idPlayable)
         self.output = self.net(self.feat)
-        idP = self.output.argmax().item()
-
-        while idP not in self.idPlayable:      #if he choses a card he can't play (either cause he doesn't have it or for the rules)
-            r = -0.5
-            self.reward = -0.5
-            with torch.no_grad():
-                Q = self.output.clone()
-                Q[idP] += self.alpha * (r +  self.y * self.output.max().item() - Q[idP])
-            l = self.loss(Q, self.output)
-            self.opt.zero_grad()
-            l.backward()
-            self.opt.step()
-            self.output = self.net(self.feat)
-            idP = self.output.argmax().item()
-
+        idP = self.FindAllowedMaximum()     #BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
         for c in self.subHand:
             if c.index == idP:
                 cc = c
+        input("?")
         return cc, idP
+
 
         #the rest of the training part (when the card has been played) needs to be done in table.py
         #in the method table.PlayCards() where each player plays a card and rewards are calculated
 
+
+
+    def FindAllowedMaximum(self):
+        with torch.no_grad():
+            outFeat = self.output.clone().detach().numpy().tolist() #create a list
+        outFeatSorted = sorted(outFeat, reverse=True)   #sort it in descending order
+        element   = outFeatSorted[0]
+        elementID = outFeat.index(element)
+        ind = 0
+        while elementID not in self.idPlayable:
+            ind += 1
+            element   = outFeatSorted[ind]
+            elementID = outFeat.index(element)
+            #print(elementID)
+        return elementID
+            
         
     def SimplePlay(self, tab, d):
         playableCards = 0

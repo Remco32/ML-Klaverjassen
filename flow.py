@@ -57,7 +57,6 @@ for currentEpoch in range(epochs):
         print('Played Cards', tmp)
         winner = t.WhoWinsTrick(d)
         t.DoBackprop()
-        input("\nContinue?")
 
     if currentEpoch % printEpoch == 0: print("Epoch {} of {}".format(currentEpoch, epochs))
     if currentEpoch % saveEpoch  == 0:
