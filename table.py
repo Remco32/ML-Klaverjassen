@@ -22,6 +22,7 @@ class Table:
         self.rules = rules
         self.roundScore = [0, 0]
         self.gameScore  = [0, 0]
+        self.cardsOnTable = [-1, -1, -1]
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this
                                               #means 3+1=0)
        
@@ -47,7 +48,19 @@ class Table:
         p0ID = self.players.index(p0) 
         return p0, p0ID
 
-    
+
+
+    def LoadState(self, path):
+        for player in self.players:
+            player.net.load_state_dict(torch.load(path))
+        print("Loaded model parameters")
+
+
+    def SaveState(self, path):
+        for player in self.players:
+            torch.save(player.net.state_dict(), path)
+
+            
     def DealCards(self, d):   #d is the deck object
         self.allPlayedCards = {}         #to keep track (count) of all the played cards and who played them
         [p.hand.clear() for p in self.players]
@@ -57,12 +70,14 @@ class Table:
         
 
     def PlayCards(self, d):     #d is the deck object
-        for p in self.orderedPlayers:
-            if self.orderedPlayers.index(p) == 0:
+        self.cardsOnTable = [-1, -1, -1]
+        for i,p in enumerate(self.orderedPlayers):
+            if i == 0:
                 self.playedCards = [p.Play(self, d)]   #play the first card
                 self.leadingSuit = self.playedCards[0].suit
             else:
                 self.playedCards.append(p.Play(self, d))
+                self.cardsOnTable[i - 1] = self.playedCards[i].index  #for the feature vector
 
         for c in self.playedCards:             
             tmp = self.playedCards.index(c)
@@ -111,7 +126,6 @@ class Table:
                 p.reward = -1
         #self.DoBackprop()      #for now it needs to be called explicitly in flow.py
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
-        print("Winner of the trick is player {}".format(self.winnerPlayer.position))
 
         if self.players[0].hand == []:
             self.roundScore[self.winnerPlayer.team] += 10
@@ -143,7 +157,6 @@ class Table:
             p.opt.step()                  #adjust weights after backprop            
             p.feat = P[i].clone()            #update the feature vector
             p.feat.requires_grad = True
-
 
 
     

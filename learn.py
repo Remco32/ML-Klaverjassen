@@ -23,6 +23,12 @@ each network one must define a different Net object.
 
 class Net(nn.Module):
 
+
+    ###################################
+    #         Neural network          #
+    ###################################
+
+    
     def __init__(self, nFeat):
         super(Net, self).__init__()
         self.conn1 = nn.Linear(nFeat, 50)             #since each layer will take a lin combination of the previous layer's nodes
@@ -89,7 +95,10 @@ class Net(nn.Module):
     # Then 32 values corresponding to which cards have been played in this round
     ## Each of these 32 values or keeping track of the cards are set up like this:
     ## 4 sets of cards, in order of suits [d, c, h, s]
-    ## First 8 values are the hearts, in the order [A, 10, K, Q, J, 9, 8 ,7]
+    ## First 8 values are the diamonds, in the order [A, 10, K, Q, J, 9, 8 ,7]
+    # 2 features for the round scores for the teams
+    # 1 feature for the trump suit
+    # 3 features for the cards currently on the table
 
 
     
@@ -101,7 +110,7 @@ class Net(nn.Module):
         - which card were played and by who (32 numbers from 0 to 4: 0 not played, 1,2,3,4 number of player)
         - round scores (2 numbers)
         - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
-        - TODO add the cards currently on table
+        - cards currently on the table
         (- round number and game scores) optional
         """
         tmp = []
@@ -126,6 +135,10 @@ class Net(nn.Module):
 
         # Which card is the trump?
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
+
+        for _ in tbl.cardsOnTable:
+            tmp.append(_)                #this is a list implemented in table.py that contains
+                                         # -1 if some cards haven't been played, and the index otherwise
         #tmp.append(who chose the trump) #TODO implement reading the actual trump value
                 
         self.featuresVector = torch.tensor(tmp, dtype=torch.float, requires_grad=True)     #since pytorch wants tensors as inputs;

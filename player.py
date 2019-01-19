@@ -37,7 +37,7 @@ class Player:
             
         self.alpha  = alpha    #learning rate
         self.y      = y        #discount rate
-        self.net    = learn.Net(67)     #need 3 more features to take into account the played cards so it's gon be 70
+        self.net    = learn.Net(70)     #the last 3 features are going to be the cards on the table
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
         self.reward = 0
@@ -83,13 +83,11 @@ class Player:
                     for card in self.subHand:
                         if card.index == i:
                             self.idPlayable.append(i)
-        print(self.idPlayable)
         self.output = self.net(self.feat)
         idP = self.FindAllowedMaximum()     #BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
         for c in self.subHand:
             if c.index == idP:
                 cc = c
-        input("?")
         return cc, idP
 
 
@@ -109,7 +107,6 @@ class Player:
             ind += 1
             element   = outFeatSorted[ind]
             elementID = outFeat.index(element)
-            #print(elementID)
         return elementID
             
         
