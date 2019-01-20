@@ -21,7 +21,7 @@ import time
 
 epochs, printEpoch, saveEpoch = 1000, 100, 10
 # Load parameters?
-loadP = 0
+loadP = 1
 
 #Create folder if needed
 
@@ -58,9 +58,10 @@ Multiple rounds in the game to properly train the network. Same as above, repeat
 
 
 t = table.Table(16, 'Simple', 0.01, 0.9)
+t.maximumEpoch = epochs # Set total epochs in table
 d = deck.Deck()
 #load parameters here
-if loadP == 1:
+if loadP == 0:
     t.LoadState(SAVEFILELIST)
 elif loadP == 0:
     print("Model parameters not loaded")
@@ -69,7 +70,9 @@ start = time.time()
     
 for currentEpoch in range(epochs):
 
-    
+    #Set experiment information in tabnle
+    t.currentEpoch = currentEpoch
+
     d.SetTrump(rnd.choice(d.suits))  
     d.DivideCards()
     t.DealCards(d)

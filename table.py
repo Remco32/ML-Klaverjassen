@@ -26,6 +26,9 @@ class Table:
         self.cardsOnTable = [-1, -1, -1]
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this
                                               #means 3+1=0)
+        # For variables used in running the experiments
+        self.currentEpoch = 0;
+        self.maximumEpoch = 0;
        
 
                                                 

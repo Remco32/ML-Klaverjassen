@@ -37,7 +37,7 @@ def greedy(greedyAction):
 
 #TODO NOTE! Untested: PyTorch with CUDA is causing me blue screens. That has to be resolved before I can test the code thoroughly.
 
-def maxBoltzmann(explorationRate, playerHand, outputLayer):
+def boltzmannExploration(explorationRate, playerHand, outputLayer):
     randomValue = rnd.uniform(0, 1) #between 0 and 1, float
     if randomValue < explorationRate:
         return rnd.choice(playerHand) # pick random option #TODO could pick illegal action

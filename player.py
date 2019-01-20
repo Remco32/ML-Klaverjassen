@@ -23,6 +23,7 @@ import learn
 import torch
 import torch.nn as nn
 import numpy as np
+import exploration_strategies as expl
 
 class Player:
 
@@ -41,6 +42,7 @@ class Player:
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
         self.reward = 0
+        self.epsilon = 0.3 # exploration rate
 
     """    
     def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
@@ -84,7 +86,10 @@ class Player:
                         if card.index == i:
                             self.idPlayable.append(i)
         self.output = self.net(self.feat)
+
         idP = self.FindAllowedMaximum()     #BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
+        #Only changes the value for idP if an exploration step is taken, else uses idP given as the first argument
+        idP = expl.diminishingEpsilonGreedy(idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
         for c in self.subHand:
             if c.index == idP:
                 cc = c
