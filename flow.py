@@ -21,7 +21,7 @@ import time
 
 epochs, printEpoch, saveEpoch = 1000, 100, 10
 # Load parameters?
-loadP = 1
+loadP = 0 #TODO check if loading works like it should
 
 #Create folder if needed
 
