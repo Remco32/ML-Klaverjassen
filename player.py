@@ -46,6 +46,7 @@ class Player:
         self.rewardArray = []
         self.weightedRewardArray = []
         self.epsilon = 0.3 # exploration rate
+        self.testing = False # Boolean to toggle whether the network is training (with exploration) or testing.
 
     """    
     def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
@@ -92,7 +93,8 @@ class Player:
 
         idP = self.FindAllowedMaximum()     #BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
         #Only changes the value for idP if an exploration step is taken, else uses idP given as the first argument
-        idP = expl.diminishingEpsilonGreedy(idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
+        if self.testing == False:
+            idP = expl.diminishingEpsilonGreedy(idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
         for c in self.subHand:
             if c.index == idP:
                 cc = c
