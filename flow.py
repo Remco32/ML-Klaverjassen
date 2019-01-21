@@ -52,20 +52,22 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
     #Create table and deck for training
     tableTraining = table.Table(16, 'Simple', 0.01, 0.9)
     tableTraining.maximumEpoch = trainingEpochs  # Set total epochs in table #TODO might be redundant now
-    deckTraining = deck.Deck()
+    d = deck.Deck()
 
-    # TODO create seperate table and deck for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
+    # TODO create seperate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
+    testingTable = table.Table(16, 'Simple', 0.01, 0.9)
 
     for i in range(totalCycles):
-        training(tableTraining,deckTraining,trainingEpochs)
-        #testing()
+        training(tableTraining,d,trainingEpochs)
+        #testingTable = updateTestingTable(trainingTable, testingTable)
+        #testing(testingTable, d, testEpochs)
         print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
-    #TODO needs the table from training, since we are interested in those results
+    #TODO needs the table from testing, since we are interested in those results
     printResults(tableTraining)
 
 def training(t, d, trainingEpochs):
-
+    print("Training...")
 
     #load parameters here
     #if loadP == 0:
@@ -96,10 +98,21 @@ def training(t, d, trainingEpochs):
     #        print("Saved model parameters")
 
 
-
 #print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
 
+#def updateTestingTable(trainingTable, testingTable):
+    # Copy the networks for the first team to the testingTable
 
+    # Set boolean 'testing' to True for all players
+
+    # Store the score from the previous testingTable somewhere, so we can plot it later
+
+    # Set second team to random AI
+
+def testing(updatedTestingTable,d, testingEpochs):
+
+    print("Testing...")
+    training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables
 
 def printResults(t):
     graphs  = [np.array(p.rewardArray) for p in t.players]
