@@ -1,5 +1,3 @@
-import os
-
 import table
 import deck
 import random as rnd
@@ -10,7 +8,10 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-epochs, printEpoch, saveEpoch = 10000, 100, 10
+#trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
+printEpoch, saveEpoch = 100, 10
+
+
 # Load parameters?
 #loadP = 0 #TODO check if loading works like it should
 #Create folder if needed
@@ -45,57 +46,83 @@ The trick winner is determined, rewards are assigned and then the table object p
 Multiple rounds in the game to properly train the network. Same as above, repeated for a number of epochs, with some more control printouts.
 """
 
+# A cycle is a set of training epochs and after that a set of test epochs.
+# i.e. 1000 training epochs, 100 test epochs, repeat for 100 loops (cycles).
+def cycle(trainingEpochs, testEpochs, totalCycles):
+    #Create table and deck for training
+    tableTraining = table.Table(16, 'Simple', 0.01, 0.9)
+    tableTraining.maximumEpoch = trainingEpochs  # Set total epochs in table #TODO might be redundant now
+    deckTraining = deck.Deck()
 
-t = table.Table(16, 'Simple', 0.01, 0.9)
-t.maximumEpoch = epochs # Set total epochs in table
-d = deck.Deck()
-#load parameters here
-#if loadP == 0:
-#    t.LoadState(SAVEFILELIST)
-#elif loadP == 0:
-#    print("Model parameters not loaded")
+    # TODO create seperate table and deck for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
 
-start = time.time()
-    
-for currentEpoch in range(epochs):
+    for i in range(totalCycles):
+        training(tableTraining,deckTraining,trainingEpochs)
+        #testing()
+        print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
-    #Set experiment information in tabnle
-    t.currentEpoch = currentEpoch
+    #TODO needs the table from training, since we are interested in those results
+    printResults(tableTraining)
 
-    d.SetTrump(rnd.choice(d.suits))  
-    d.DivideCards()
-    t.DealCards(d)
+def training(t, d, trainingEpochs):
 
-    
-    while t.players[0].hand != []:
-        t.PlayCards(d)
-        winner = t.WhoWinsTrick(d)
-        t.DoBackprop()
 
-    if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, epochs, time.time() - start))
-#    if currentEpoch == 100: 
-#        t.SaveState(SAVEFOLDER)
-#        print("Saved model parameters")
+    #load parameters here
+    #if loadP == 0:
+    #    t.LoadState(SAVEFILELIST)
+    #elif loadP == 0:
+    #    print("Model parameters not loaded")
 
-print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
+    start = time.time()
 
-graphs  = [np.array(p.rewardArray) for p in t.players]
-wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
-styles = ['-b', '-r', '-g', '-k']
-plt.subplot(121)
-p =[plt.plot(np.cumsum(graphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
-plt.legend()
-plt.title('Absolute reward')
-plt.xlabel('Tricks')
-plt.ylabel('Reward')
-plt.grid()
-plt.subplot(122)
-pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
-plt.legend()
-plt.title('Weighted reward')
-plt.xlabel('Tricks')
-plt.ylabel('Reward / hand value')
-plt.grid()
-plt.show()
+    for currentEpoch in range(trainingEpochs):
 
-print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
+        #Set experiment information in tabnle
+        t.currentEpoch = currentEpoch
+
+        d.SetTrump(rnd.choice(d.suits))
+        d.DivideCards()
+        t.DealCards(d)
+
+
+        while t.players[0].hand != []:
+            t.PlayCards(d)
+            winner = t.WhoWinsTrick(d)
+            t.DoBackprop()
+
+        if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, trainingEpochs, time.time() - start))
+    #    if currentEpoch == 100:
+    #        t.SaveState(SAVEFOLDER)
+    #        print("Saved model parameters")
+
+
+
+#print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
+
+
+
+def printResults(t):
+    graphs  = [np.array(p.rewardArray) for p in t.players]
+    wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
+    styles = ['-b', '-r', '-g', '-k']
+    plt.subplot(121)
+    p =[plt.plot(np.cumsum(graphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+    plt.legend()
+    plt.title('Absolute reward')
+    plt.xlabel('Tricks')
+    plt.ylabel('Reward')
+    plt.grid()
+    plt.subplot(122)
+    pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+    plt.legend()
+    plt.title('Weighted reward')
+    plt.xlabel('Tricks')
+    plt.ylabel('Reward / hand value')
+    plt.grid()
+    plt.show()
+
+#print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
+
+
+# The interesting part:
+cycle(1000, 0, 2)
