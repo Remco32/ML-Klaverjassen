@@ -1,16 +1,3 @@
-###########################################################################
-# Full program flow concept
-#
-# x- initialise a table object: this also creates the 4 player objects
-# x- divide the deck (this includes deck shuffling, see deck.py)
-# x- deal the cards
-# x- players play the cards
-#  - count the point for the table
-#  - after 8 table plays, count the points for the round
-#  - update the dealer
-#  - after 16 rounds, count the points for the game
-#
-###########################################################################
 import os
 
 import table
@@ -18,20 +5,22 @@ import deck
 import random as rnd
 import learn
 import time
+import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
-epochs, printEpoch, saveEpoch = 1000, 100, 10
+epochs, printEpoch, saveEpoch = 10000, 100, 10
 # Load parameters?
-loadP = 0 #TODO check if loading works like it should
-
+#loadP = 0 #TODO check if loading works like it should
 #Create folder if needed
+#SAVEFOLDER = os.path.dirname(__file__) + '/weights/'
 
-SAVEFOLDER = os.path.dirname(__file__) + '/weights/'
+#if not os.path.exists(SAVEFOLDER):
+#    os.makedirs(SAVEFOLDER)
 
-if not os.path.exists(SAVEFOLDER):
-    os.makedirs(SAVEFOLDER)
-
-SAVEFILELIST = ['player' + str(i) + '_weights.pth' for i in range(4)]
-print(SAVEFILELIST)
+#SAVEFILELIST = ['player' + str(i) + '_weights.pth' for i in range(4)]
+#print(SAVEFILELIST)
 
 """
 STEPS TO UNDERTAKE TO PROPERLY RUN THE PROGRAM:
@@ -61,10 +50,10 @@ t = table.Table(16, 'Simple', 0.01, 0.9)
 t.maximumEpoch = epochs # Set total epochs in table
 d = deck.Deck()
 #load parameters here
-if loadP == 0:
-    t.LoadState(SAVEFILELIST)
-elif loadP == 0:
-    print("Model parameters not loaded")
+#if loadP == 0:
+#    t.LoadState(SAVEFILELIST)
+#elif loadP == 0:
+#    print("Model parameters not loaded")
 
 start = time.time()
     
@@ -84,8 +73,29 @@ for currentEpoch in range(epochs):
         t.DoBackprop()
 
     if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, epochs, time.time() - start))
-    if currentEpoch == 100:  #can't seem to make it work, I don't understand why
-        t.SaveState(SAVEFOLDER)
-        print("Saved model parameters")
+#    if currentEpoch == 100: 
+#        t.SaveState(SAVEFOLDER)
+#        print("Saved model parameters")
 
-print("Training completed succesfully! \tElapsed time: {:.4} s".format(time.time() - start))
+print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
+
+graphs  = [np.array(p.rewardArray) for p in t.players]
+wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
+styles = ['-b', '-r', '-g', '-k']
+plt.subplot(121)
+p =[plt.plot(np.cumsum(graphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+plt.legend()
+plt.title('Absolute reward')
+plt.xlabel('Tricks')
+plt.ylabel('Reward')
+plt.grid()
+plt.subplot(122)
+pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+plt.legend()
+plt.title('Weighted reward')
+plt.xlabel('Tricks')
+plt.ylabel('Reward / hand value')
+plt.grid()
+plt.show()
+
+print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))

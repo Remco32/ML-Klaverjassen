@@ -35,6 +35,7 @@ class Player:
             self.team = 0
         else:
             self.team = 1
+        self.handSum = 0
             
         self.alpha  = alpha    #learning rate
         self.y      = y        #discount rate
@@ -42,6 +43,8 @@ class Player:
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
         self.reward = 0
+        self.rewardArray = []
+        self.weightedRewardArray = []
         self.epsilon = 0.3 # exploration rate
 
     """    

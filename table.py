@@ -69,10 +69,13 @@ class Table:
             
     def DealCards(self, d):   #d is the deck object
         self.allPlayedCards = {}         #to keep track (count) of all the played cards and who played them
-        [p.hand.clear() for p in self.players]
+        [p.hand.clear() for p in self.players]        
         for p in self.orderedPlayers:
+            p.handSum = 0
             p.hand = d.HandOutCards(self.orderedPlayers.index(p))
             p.feat = p.net.CreatePlayFeaturesVector(p, self, d)    #create the feature vector when the cards are dealt
+            for card in p.hand:
+                p.handSum += card.value
         
 
     def PlayCards(self, d):     #d is the deck object
@@ -128,9 +131,13 @@ class Table:
         for p in self.players:
             if p.team == self.winnerPlayer.team:
                 p.reward = 1
+                if p == self.winnerPlayer:
+                    p.reward += 0.2      #reward good plays to single player
             else:
                 p.reward = -1
-        #self.DoBackprop()      #for now it needs to be called explicitly in flow.py
+            p.rewardArray.append(p.reward)
+            p.weightedRewardArray.append(p.reward / p.handSum)
+
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
 
         if self.players[0].hand == []:
