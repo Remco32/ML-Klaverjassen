@@ -90,7 +90,8 @@ def training(t, d, trainingEpochs):
         while t.players[0].hand != []:
             t.PlayCards(d)
             winner = t.WhoWinsTrick(d)
-            t.DoBackprop()
+            if t.players[0].testing == False:
+                t.DoBackprop()
 
         if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, trainingEpochs, time.time() - start))
     #    if currentEpoch == 100:
