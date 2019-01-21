@@ -15,23 +15,28 @@ import torch
 
 class Table:
 
-    def __init__(self, Round, rules, alpha, y):    #now all players have same learning rate and y. For exp. purposes it might be interesting to have different values
+    def __init__(self, Round, alpha, y):    #now all players have same learning rate and y. For exp. purposes it might be interesting to have different values
         self.playerID = 0,1,2,3             #the tuple's index is the player's name 
         self.cycleID = self.playerID * 2    #useful to cycle from player 4 to 1
         self.players  =[player.Player(i, alpha, y) for i in self.playerID]
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
-        self.rules = rules
         self.roundScore = [0, 0]
         self.gameScore  = [0, 0]
         self.cardsOnTable = [-1, -1, -1]
-        self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this
-                                              #means 3+1=0)
+        self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this means 3+1=0)
+        
         # For variables used in running the experiments
         self.currentEpoch = 0;
         self.maximumEpoch = 0;
+        self.testingScores = []      #it will become a 2xN matrix, where N is the number of testing rounds
+        
        
 
-                                                
+
+    def SetPlayerBehaviour(self, playerID, behaviour):   #behaviour is either 'Random' or 'Network'
+        self.players[playerID].behaviour = behaviour
+
+        
     def Order(self, who):
         self.orderedPlayers = [self.players[self.cycleID[who + i]] for i in range(len(self.playerID))]
 

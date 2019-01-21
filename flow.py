@@ -50,17 +50,17 @@ Multiple rounds in the game to properly train the network. Same as above, repeat
 # i.e. 1000 training epochs, 100 test epochs, repeat for 100 loops (cycles).
 def cycle(trainingEpochs, testEpochs, totalCycles):
     #Create table and deck for training
-    tableTraining = table.Table(16, 'Simple', 0.01, 0.9)
+    tableTraining = table.Table(16, 0.01, 0.9)
     tableTraining.maximumEpoch = trainingEpochs  # Set total epochs in table #TODO might be redundant now
     d = deck.Deck()
 
-    # TODO create seperate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
-    testingTable = table.Table(16, 'Simple', 0.01, 0.9)
+    # TODO create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
+    testingTable = table.Table(16, 0.01, 0.9)
 
     for i in range(totalCycles):
         training(tableTraining,d,trainingEpochs)
-        #testingTable = updateTestingTable(trainingTable, testingTable)
-        #testing(testingTable, d, testEpochs)
+        testingTable = updateTestingTable(trainingTable, testingTable)
+        testing(testingTable, d, testEpochs)
         print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
     #TODO needs the table from testing, since we are interested in those results
@@ -79,7 +79,7 @@ def training(t, d, trainingEpochs):
 
     for currentEpoch in range(trainingEpochs):
 
-        #Set experiment information in tabnle
+        #Set experiment information in table
         t.currentEpoch = currentEpoch
 
         d.SetTrump(rnd.choice(d.suits))
@@ -93,6 +93,9 @@ def training(t, d, trainingEpochs):
             if t.players[0].testing == False:
                 t.DoBackprop()
 
+        if t.players[0].testing == True:
+                t.testingScores.append(t.roundScore)
+
         if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, trainingEpochs, time.time() - start))
     #    if currentEpoch == 100:
     #        t.SaveState(SAVEFOLDER)
@@ -101,19 +104,29 @@ def training(t, d, trainingEpochs):
 
 #print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
 
-#def updateTestingTable(trainingTable, testingTable):
-    # Copy the networks for the first team to the testingTable
-
-    # Set boolean 'testing' to True for all players
-
-    # Store the score from the previous testingTable somewhere, so we can plot it later
+def updateTestingTable(trainingTable, testingTable):
+    # Copy the networks for the first team to the testingTable ## copy the player objects directly
+    for i in (0,2):
+        testingTable.players[i] = trainingTable.players[i]
+        testingTable.SetPlayerBehaviour(i,'Network')       #just to be sure, they should be 'Network' by default        
 
     # Set second team to random AI
+    for i in (1,3):
+        testingTable.SetPlayerBehaviour(i, 'Random')
+        
+    # Set boolean 'testing' to True for all players
+    for p in testingTable.players:
+        p.testing = True
 
-def testing(updatedTestingTable,d, testingEpochs):
+        # Store the score from the previous testingTable somewhere, so we can plot it later
+        ## This is done in training() appending to the testingTable.testingScores
+        
+    return testingTable
+
+def testing(updatedTestingTable, d, testingEpochs):
 
     print("Testing...")
-    training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables
+    training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables and after setting players.testing == True
 
 def printResults(t):
     graphs  = [np.array(p.rewardArray) for p in t.players]
@@ -138,5 +151,8 @@ def printResults(t):
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
 
+
 # The interesting part:
 cycle(1000, 0, 2)
+
+
