@@ -27,8 +27,7 @@ import exploration_strategies as expl
 
 class Player:
 
-    # player 0 and 2 are in team 0; player 1 and 3 are in team 1 
-    def __init__(self, number, alpha, y):  #number is an integer from 0 to 3
+    def __init__(self, number, alpha, y): 
         self.position = number
         self.hand = []
         if number % 2 == 0:
@@ -39,7 +38,7 @@ class Player:
             
         self.alpha  = alpha    #learning rate
         self.y      = y        #discount rate
-        self.net    = learn.Net(70)     #the last 3 features are going to be the cards on the table
+        self.net    = learn.Net(70)     
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
         self.reward = 0
@@ -47,15 +46,9 @@ class Player:
         self.weightedRewardArray = []
         self.epsilon = 0.3 # exploration rate
 
-    """    
-    def Pop(self):    #these things will be replaced in NetPlay(self, *args). Check whether all that's needed in here is also in NetPlay
-        popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
-        self.hand.remove(popped)
-        return popped
-    """
         
-    # method to play a card from the hand.
-    def Play(self, tab, d):  #tab is the table object for the rules, d is the deck object for the trump suit
+        
+    def Play(self, tab, d):
         
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
@@ -79,8 +72,6 @@ class Player:
 
         
     def NetPlay(self, tbl, dck):
-        #function to play a card using reinforcement learning
-        #self.feat = self.net.CreatePlayFeaturesVector(self, tbl, dck)   #called in table.DealCards
         self.idPlayable = []
         for i,c in enumerate(self.feat):
             if i < 32:   #only the hand
@@ -99,15 +90,10 @@ class Player:
         return cc, idP
 
 
-        #the rest of the training part (when the card has been played) needs to be done in table.py
-        #in the method table.PlayCards() where each player plays a card and rewards are calculated
-
-
-
     def FindAllowedMaximum(self):
         with torch.no_grad():
             outFeat = self.output.clone().detach().numpy().tolist() #create a list
-        outFeatSorted = sorted(outFeat, reverse=True)   #sort it in descending order
+        outFeatSorted = sorted(outFeat, reverse=True)  #sort it in descending order
         element   = outFeatSorted[0]
         elementID = outFeat.index(element)
         ind = 0

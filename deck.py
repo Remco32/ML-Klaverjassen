@@ -40,6 +40,7 @@ class Deck:
         self.cards = [Card(n, s,  self.nonTrumpDict[n][0], self.nonTrumpDict[n][1]) for s in self.suits for n in self.nonTrumpDict.keys()]
         [self.cards[i].SetIndex(i) for i in range(len(self.cards))] #now cards are uniquely indexed for the whole game, after shuffling too
         self.dividedCards = self.handP0, self.handP1, self.handP2, self.handP3 = [], [], [], []
+        self.maxCardValue = 20.    #for the jack of trump
 
 
     def SetTrump(self, trumpSuit):  #set the trump values
