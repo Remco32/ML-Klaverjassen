@@ -55,7 +55,11 @@ class Player:
         self.hand.remove(popped)
         return popped
        
-        
+
+    def handAsTuple(self):
+        h = [c.CardAsTuple() for c in self.hand]
+        return h
+    
     def Play(self, tab, d):
         
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
@@ -136,7 +140,7 @@ class Player:
 
 
     def NetworkPlay(self, tab, d):      #play with neural network in AMS rules
-         playableCards = 0
+        playableCards = 0
         
         for c in self.hand:                     #first try to flag cards in suit as playable
             if c.suit == tab.leadingSuit:
@@ -157,7 +161,7 @@ class Player:
         self.played = tmp[0]     
         self.playedID =tmp[1]
         self.hand.remove(self.played)
-         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
+        if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
-                c.isPlayable = Fals
+                c.isPlayable = False
 

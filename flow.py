@@ -9,7 +9,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
-printEpoch, saveEpoch = 100, 10
+printEpoch, saveEpoch = 10, 10
 
 
 # Load parameters?
@@ -50,24 +50,28 @@ Multiple rounds in the game to properly train the network. Same as above, repeat
 # i.e. 1000 training epochs, 100 test epochs, repeat for 100 loops (cycles).
 def cycle(trainingEpochs, testEpochs, totalCycles):
     #Create table and deck for training
-    tableTraining = table.Table(16, 0.01, 0.9)
-    tableTraining.maximumEpoch = trainingEpochs  # Set total epochs in table #TODO might be redundant now
+    trainingTable = table.Table(16, 0.01, 0.9)
+    trainingTable.maximumEpoch = trainingEpochs  # Set total epochs in table #TODO might be redundant now
     d = deck.Deck()
 
-    # TODO create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
+    # create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
     testingTable = table.Table(16, 0.01, 0.9)
 
     for i in range(totalCycles):
-        training(tableTraining,d,trainingEpochs)
+        print('Updating the training table')
+        trainingTable = updateTrainingTable(trainingTable)
+        print('Training...')
+        training(trainingTable, d, trainingEpochs)
+        print('Updating the test table')
         testingTable = updateTestingTable(trainingTable, testingTable)
-        testing(testingTable, d, testEpochs)
+        print('Testing...')
+        training(testingTable, d, testEpochs)
         print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
-    #TODO needs the table from testing, since we are interested in those results
-    printResults(tableTraining)
+        
+    printResults(testingTable)
 
 def training(t, d, trainingEpochs):
-    print("Training...")
 
     #load parameters here
     #if loadP == 0:
@@ -78,23 +82,28 @@ def training(t, d, trainingEpochs):
     start = time.time()
 
     for currentEpoch in range(trainingEpochs):
-
+        if t.players[0].testing == True: input()
         #Set experiment information in table
         t.currentEpoch = currentEpoch
 
         d.SetTrump(rnd.choice(d.suits))
         d.DivideCards()
+        print(d.dividedCards)
         t.DealCards(d)
-
+        print('hands', t.players[0].handAsTuple())
 
         while t.players[0].hand != []:
             t.PlayCards(d)
             winner = t.WhoWinsTrick(d)
+            print(t.players[0].testing)
             if t.players[0].testing == False:
                 t.DoBackprop()
+            elif t.players[0].testing == True:
+                print('here')
+                print(t.testingScore)
+                t.testingScore.append(t.roundScore.copy())
 
-        if t.players[0].testing == True:
-                t.testingScores.append(t.roundScore)
+                    
 
         if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, trainingEpochs, time.time() - start))
     #    if currentEpoch == 100:
@@ -117,35 +126,37 @@ def updateTestingTable(trainingTable, testingTable):
     # Set boolean 'testing' to True for all players
     for p in testingTable.players:
         p.testing = True
-
-        # Store the score from the previous testingTable somewhere, so we can plot it later
-        ## This is done in training() appending to the testingTable.testingScores
-        
+       
     return testingTable
+
+def updateTrainingTable(trainingTable):      #needed to reset the players.testing boolean
+    for p in trainingTable.players:
+        p.testing = False
+
+    return trainingTable
 
 def testing(updatedTestingTable, d, testingEpochs):
 
-    print("Testing...")
     training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables and after setting players.testing == True
 
 def printResults(t):
-    graphs  = [np.array(p.rewardArray) for p in t.players]
-    wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
-    styles = ['-b', '-r', '-g', '-k']
-    plt.subplot(121)
-    p =[plt.plot(np.cumsum(graphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+    graphs  = [np.array(t.testingScores[i]) for i in (0,1)]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
+   # wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
+    styles = ['-b', '-r']
+   # plt.subplot(121)
+    p =[plt.plot(np.cumsum(graphs[i]), s, label='Team '+str(i)) for i,s in enumerate(styles)]
     plt.legend()
-    plt.title('Absolute reward')
-    plt.xlabel('Tricks')
-    plt.ylabel('Reward')
+    plt.title('Team scores during testing')
+    plt.xlabel('Testing tricks')
+    plt.ylabel('Team scores')
     plt.grid()
-    plt.subplot(122)
-    pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
-    plt.legend()
-    plt.title('Weighted reward')
-    plt.xlabel('Tricks')
-    plt.ylabel('Reward / hand value')
-    plt.grid()
+   # plt.subplot(122)
+   # pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
+   # plt.legend()
+   # plt.title('Weighted reward')
+   # plt.xlabel('Tricks')
+   # plt.ylabel('Reward / hand value')
+   # plt.grid()
     plt.show()
 
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
@@ -153,6 +164,6 @@ def printResults(t):
 
 
 # The interesting part:
-cycle(1000, 0, 2)
+cycle(100, 100, 2)
 
 

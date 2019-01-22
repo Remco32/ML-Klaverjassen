@@ -78,6 +78,7 @@ class Table:
         for p in self.orderedPlayers:
             p.handSum = 0.
             p.hand = d.HandOutCards(self.orderedPlayers.index(p))
+            print(p.handAsTuple())
             p.feat = p.net.CreatePlayFeaturesVector(p, self, d)    #create the feature vector when the cards are dealt
             for card in p.hand:
                 p.handSum += card.value
