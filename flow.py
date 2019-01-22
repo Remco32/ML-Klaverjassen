@@ -79,7 +79,6 @@ def training(t, d, trainingEpochs):
     #elif loadP == 0:
     #    print("Model parameters not loaded")
 
-    start = time.time()
 
     for currentEpoch in range(trainingEpochs):
         #Set experiment information in table
@@ -135,23 +134,17 @@ def testing(updatedTestingTable, d, testingEpochs):
     print('Testing completed')
     
 def printResults(t):
-    graphs  = [np.array(t.testingScores[i]) for i in (0,1)]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
-   # wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
-    styles = ['-b', '-r']
-   # plt.subplot(121)
-    p =[plt.plot(np.cumsum(graphs[i]), s, label='Team '+str(i)) for i,s in enumerate(styles)]
+    graphs = [[], []]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
+    for i in range(len(t.testingScores)):
+        graphs[0].append(t.testingScores[i][0])
+        graphs[1].append(t.testingScores[i][1])
+    plt.plot(np.cumsum(graphs[0]), '-b', label='Team 0 - network play')
+    plt.plot(np.cumsum(graphs[1]), '-r', label='Team 1 - random play' )
     plt.legend()
     plt.title('Team scores during testing')
     plt.xlabel('Testing tricks')
     plt.ylabel('Team scores')
     plt.grid()
-   # plt.subplot(122)
-   # pp =[plt.plot(np.cumsum(wGraphs[i]), s, label='Player '+str(i)) for i,s in enumerate(styles)]
-   # plt.legend()
-   # plt.title('Weighted reward')
-   # plt.xlabel('Tricks')
-   # plt.ylabel('Reward / hand value')
-   # plt.grid()
     plt.show()
 
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
@@ -159,6 +152,7 @@ def printResults(t):
 
 
 # The interesting part:
-cycle(1000, 100, 20)
+start = time.time()
+cycle(1000, 100, 5)
 
 
