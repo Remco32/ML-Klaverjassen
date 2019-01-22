@@ -131,8 +131,9 @@ class Player:
 
         if playableCards == 0:                  #otherwise flag any other card
             for c in self.hand:
-                c.isPlayable = True 
-   
+                c.isPlayable = True
+                
+        self.subHand = [c for c in self.hand if c.isPlayable == True]
         self.played = self.Pop()
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:

@@ -9,7 +9,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
-printEpoch, saveEpoch = 10, 10
+printEpoch, saveEpoch = 100, 10
 
 
 # Load parameters?
@@ -82,26 +82,20 @@ def training(t, d, trainingEpochs):
     start = time.time()
 
     for currentEpoch in range(trainingEpochs):
-        if t.players[0].testing == True: input()
         #Set experiment information in table
         t.currentEpoch = currentEpoch
 
         d.SetTrump(rnd.choice(d.suits))
         d.DivideCards()
-        print(d.dividedCards)
         t.DealCards(d)
-        print('hands', t.players[0].handAsTuple())
 
         while t.players[0].hand != []:
             t.PlayCards(d)
             winner = t.WhoWinsTrick(d)
-            print(t.players[0].testing)
             if t.players[0].testing == False:
                 t.DoBackprop()
             elif t.players[0].testing == True:
-                print('here')
-                print(t.testingScore)
-                t.testingScore.append(t.roundScore.copy())
+                t.testingScores.append(t.roundScore.copy())
 
                     
 
@@ -114,9 +108,9 @@ def training(t, d, trainingEpochs):
 #print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
 
 def updateTestingTable(trainingTable, testingTable):
-    # Copy the networks for the first team to the testingTable ## copy the player objects directly
+    # Copy the networks for the first team to the testingTable ## copying the players directly won't work
     for i in (0,2):
-        testingTable.players[i] = trainingTable.players[i]
+        testingTable.players[i].net.load_state_dict(trainingTable.players[i].net.state_dict())     #trying to solve the problem by not copyin the players but the model
         testingTable.SetPlayerBehaviour(i,'Network')       #just to be sure, they should be 'Network' by default        
 
     # Set second team to random AI
@@ -138,7 +132,8 @@ def updateTrainingTable(trainingTable):      #needed to reset the players.testin
 def testing(updatedTestingTable, d, testingEpochs):
 
     training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables and after setting players.testing == True
-
+    print('Testing completed')
+    
 def printResults(t):
     graphs  = [np.array(t.testingScores[i]) for i in (0,1)]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
    # wGraphs = [np.array(p.weightedRewardArray) for p in t.players]
@@ -164,6 +159,6 @@ def printResults(t):
 
 
 # The interesting part:
-cycle(100, 100, 2)
+cycle(1000, 100, 20)
 
 
