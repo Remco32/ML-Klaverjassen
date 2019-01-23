@@ -61,7 +61,7 @@ class Player:
         return h
     
     def Play(self, tab, d):
-        
+        self.feat = self.net.UpdateFeatureVectors(self, tbl, dck)[0]
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
                 c.isPlayable = True
