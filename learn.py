@@ -90,29 +90,20 @@ class Net(nn.Module):
 
     
 
-    # Feature vector looks like this: #TODO finish for easier reading fo the code
+    # Play feature vector looks like this:
     # First 32 values correspond to the hand of the player
-    # Then 32 values corresponding to which cards have been played in this round
+    # Then 32 values corresponding to which cards have been played in this round by whom
     ## Each of these 32 values or keeping track of the cards are set up like this:
     ## 4 sets of cards, in order of suits [d, c, h, s]
     ## First 8 values are the diamonds, in the order [A, 10, K, Q, J, 9, 8 ,7]
+    # 32 features for the cards currently on the table, and played by whom, ordered as above
     # 2 features for the round scores for the teams
     # 1 feature for the trump suit
-    # 3 features for the cards currently on the table
+
 
 
     
     def CreatePlayFeaturesVector(self, pl, tbl, dck):
-        """
-        This will have to be called after every trick is played, to update the features.
-        Needed features:
-        - hand (same as above)
-        - which card were played and by who (32 numbers from 0 to 4: 0 not played, 1,2,3,4 number of player)
-        - round scores (2 numbers)
-        - trump (which suit [1,2,3,4], who chose it [1,2,3,4])  #for now since the trump choosing is not implemented it's just the suit
-        - cards currently on the table
-        (- round number and game scores) optional
-        """
         tmp = []
         # Generate part of feature vector for the player's hand
         tmp = []
