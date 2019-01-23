@@ -57,6 +57,11 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
     # create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
     testingTable = table.Table(16, 0.01, 0.9)
 
+
+    # First test for baseline
+    updateTestingTable(testingTable, testingTable) #No need to use the training table since it hasn't trained yet
+    testing(testingTable, d, testEpochs)
+
     for i in range(totalCycles):
         print('Updating the training table')
         trainingTable = updateTrainingTable(trainingTable)
@@ -65,7 +70,7 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         print('Updating the test table')
         testingTable = updateTestingTable(trainingTable, testingTable)
         print('Testing...')
-        training(testingTable, d, testEpochs)
+        testing(testingTable, d, testEpochs)
         print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
         
@@ -119,6 +124,8 @@ def updateTestingTable(trainingTable, testingTable):
     # Set boolean 'testing' to True for all players
     for p in testingTable.players:
         p.testing = True
+
+    # Reset game score
        
     return testingTable
 

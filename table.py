@@ -20,7 +20,7 @@ class Table:
         self.cycleID = self.playerID * 2    #useful to cycle from player 4 to 1
         self.players  =[player.Player(i, alpha, y) for i in self.playerID]
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
-        self.roundScore = [0, 0]
+        self.roundScore = [0, 0]    # No longer cumulative
         self.gameScore  = [0, 0]
         self.cardsOnTable = [-1, -1, -1]
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this means 3+1=0)
@@ -74,6 +74,8 @@ class Table:
             
     def DealCards(self, d):   #d is the deck object
         self.allPlayedCards = {}         #to keep track (count) of all the played cards and who played them
+        self.roundScore = [0,0] # Reset to 0, instead of cummulating
+
         [p.hand.clear() for p in self.players]        
         for p in self.orderedPlayers:
             p.handSum = 0.
