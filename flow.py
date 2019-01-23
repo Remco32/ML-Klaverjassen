@@ -160,6 +160,6 @@ def printResults(t):
 
 # The interesting part:
 start = time.time()
-cycle(1000, 100, 5)
+cycle(1000, 100, 3)
 
 

@@ -22,7 +22,7 @@ class Table:
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
         self.roundScore = [0, 0]    # No longer cumulative
         self.gameScore  = [0, 0]
-        self.cardsOnTable = [-1, -1, -1]
+        self.playedCards = []
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this means 3+1=0)
         
         # For variables used in running the experiments
@@ -86,15 +86,19 @@ class Table:
                
 
     def PlayCards(self, d):     #d is the deck object
-        self.cardsOnTable = [-1, -1, -1]
+        #playedCards and cardsOnTable are really the same thing except
+        #cardsOnTable has one less element (it doesn't have the last played card
+        #because no player cares about that)
+        self.cardsOnTable = []
         for i,p in enumerate(self.orderedPlayers):
             if i == 0:
-                self.playedCards = [p.Play(self, d)]   #play the first card
-                self.leadingSuit = self.playedCards[0].suit
+                self.playedCards  = [p.Play(self, d)]   #play the first card
+                self.leadingSuit  = self.playedCards[0].suit
             else:
                 self.playedCards.append(p.Play(self, d))
-                self.cardsOnTable[i - 1] = self.playedCards[i].index  #for the feature vector
-
+                
+            self.playedCards[i].whoPlayedMe = p.position 
+            
         for c in self.playedCards:             
             tmp = self.playedCards.index(c)
             tmp = self.orderedPlayers[tmp]    #player object who played the card
@@ -157,7 +161,7 @@ class Table:
         with torch.no_grad():
 
             Plist = [f.feat.clone() for f in self.orderedPlayers]
-            P = [torch.tensor(Pl, dtype=torch.float) for Pl in Plist]     #clone the feature vectors to delete played cards
+            P = [torch.tensor(Pl, dtype=torch.float) for Pl in Plist]     #clone the feature vectors to delete played card for next move
                 
             for i,feat_vec in enumerate(P):     #for every player's features
                 for j,c in enumerate(feat_vec):         #for every card in the feature vector
@@ -173,10 +177,12 @@ class Table:
             p.l = p.loss(p.output, Q[i]) #compute loss
             p.opt.zero_grad()
             p.l.backward()                #do backprop
-            p.opt.step()                  #adjust weights after backprop            
+            p.opt.step()                  #adjust weights after backprop
+            ''' This is probably not necessary since the feature vectors are updated in players.Play(), 
+                being built from scratch with the updated information.
             p.feat = P[i].clone()            #update the feature vector
             p.feat.requires_grad = True
-
+            '''
 
     
     def whoWinsRound(self):

@@ -8,11 +8,12 @@ from collections import OrderedDict
 class Card:
 
     def __init__(self, name, suit, value, rank):
-        self.suit       = suit
-        self.name       = name
-        self.value      = value
-        self.rank       = rank
-        self.isPlayable = False         #major change for playing algorithms
+        self.suit        = suit
+        self.name        = name
+        self.value       = value
+        self.rank        = rank
+        self.isPlayable  = False         #major change for playing algorithms
+        self.whoPlayedMe = 0   #useful sometimes
 
     def SetValue(self, value):
         self.value = value
@@ -55,8 +56,10 @@ class Deck:
         #the hands need to be emptied beforehand, otherwise cards will be
         #added indefinitely; then the cards need to be shuffled again
         self.shuffledCards = rnd.sample(self.cards, len(self.cards))      #now a copy of the deck is shuffled
-        shuffledDeck = [c for c in self.shuffledCards] 
+        shuffledDeck = [c for c in self.shuffledCards]  #maybe redundant? 
         [self.dividedCards[i].clear() for i in range(4)]
+        for c in shuffledDeck:
+            c.whoPlayedMe = 0
         """
         self.handP0.append(shuffledDeck[:8])
         self.handP1.append(shuffledDeck[8:16])
