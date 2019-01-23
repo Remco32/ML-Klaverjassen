@@ -22,7 +22,7 @@ class Table:
         self.dealer   = rnd.choice(self.playerID)  #first dealer chosen randomly
         self.roundScore = [0, 0]
         self.gameScore  = [0, 0]
-        self.cardsOnTable = [-1, -1, -1]
+        self.playedCards = []
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this means 3+1=0)
         
         # For variables used in running the experiments
@@ -84,14 +84,18 @@ class Table:
                
 
     def PlayCards(self, d):     #d is the deck object
+        #playedCards and cardsOnTable are really the same thing except
+        #cardsOnTable has one less element (it doesn't have the last played card
+        #because no player cares about that)
         self.cardsOnTable = []
         for i,p in enumerate(self.orderedPlayers):
             if i == 0:
-                self.playedCards = [p.Play(self, d)]   #play the first card
-                self.leadingSuit = self.playedCards[0].suit
+                self.playedCards  = [p.Play(self, d)]   #play the first card
+                self.leadingSuit  = self.playedCards[0].suit
             else:
                 self.playedCards.append(p.Play(self, d))
-                self.cardsOnTable.append(self.playedCards[i])  #for the feature vector
+                
+            self.playedCards[i].whoPlayedMe = p.position 
             
         for c in self.playedCards:             
             tmp = self.playedCards.index(c)

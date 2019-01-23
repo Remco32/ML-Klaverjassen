@@ -39,7 +39,7 @@ class Player:
             
         self.alpha  = alpha    #learning rate
         self.y      = y        #discount rate
-        self.net    = learn.Net(70)     
+        self.net    = learn.Net(97)     
         self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
         self.loss   = nn.MSELoss()
         self.reward = 0
@@ -52,7 +52,6 @@ class Player:
     
     def Pop(self):    
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
-        self.hand.remove(popped)
         return popped
        
 
@@ -61,13 +60,12 @@ class Player:
         return h
     
     def Play(self, tab, d):
-        self.feat = self.net.UpdateFeatureVectors(self, tbl, dck)[0]
+        self.feat = self.net.UpdateFeatureVectors(self, tab, d)[0]
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
                 c.isPlayable = True
             self.subHand = [c for c in self.hand if c.isPlayable == True]
             self.played = self.NetPlay(tab, d)[0]
-            self.hand.remove(self.played)
             for c in self.hand:
                 c.isPlayable = False
                         
@@ -78,6 +76,8 @@ class Player:
                 self.NetworkPlay(tab, d)
             else:
                 print('Unknown rules. Input either \'Simple\', \'Amsterdam\'')
+
+        self.hand.remove(self.played)
         return self.played             #self.played is assigned within each of the play methods below
 
         
@@ -107,11 +107,10 @@ class Player:
         outFeatSorted = sorted(outFeat, reverse=True)  #sort it in descending order
         element   = outFeatSorted[0]
         elementID = outFeat.index(element)
-        ind = 0
-        while elementID not in self.idPlayable:
-            ind += 1
-            element   = outFeatSorted[ind]
+        for element in outFeatSorted:
             elementID = outFeat.index(element)
+            if elementID in self.idPlayable:
+                break
         return elementID
             
         
@@ -161,7 +160,6 @@ class Player:
         tmp = self.NetPlay(tab,d)
         self.played = tmp[0]     
         self.playedID =tmp[1]
-        self.hand.remove(self.played)
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
                 c.isPlayable = False

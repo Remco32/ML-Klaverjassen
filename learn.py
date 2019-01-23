@@ -121,18 +121,23 @@ class Net(nn.Module):
                 tmp.append(0)
 
         # Generate part of feature vector for keeping track of which cards are currently on the table
-        for c in dck.cards:
-            if c in tbl.cardsOnTable:
-                tmp.append(tbl.allPlayedCards[c] + 1)  #put the player index+1
-            else:
+        if tbl.playedCards == []:
+            for i in range(32):
                 tmp.append(0)
+        else:
+            for c in dck.cards:
+                if c in tbl.playedCards:
+                    tmp.append(c.whoPlayedMe + 1)  #put the player index+1
+                else:
+                    tmp.append(0)
         
         # Current round scores for team 0 and team 1
-        [tmp.append(s) for s in tbl.roundScore]
+        #[tmp.append(s) for s in tbl.roundScore]   #unimportant
 
         # Which card is the trump?
         tmp.append(dck.suits.index(dck.trumpSuit) + 1) #code: 1,2,3,4 = d,c,h,s
-        ''' THE CODE BELOW IS DEPRECATED BECAUSE IT DOESN'T DISTINGUISH WHICH PLAYER PLAYED WHICH CARD
+        
+        ''' THE CODE COMMENTED BELOW IS DEPRECATED BECAUSE IT DOESN'T DISTINGUISH WHICH PLAYER PLAYED WHICH CARD
         for _ in tbl.cardsOnTable:
             tmp.append(_)                #this is a list implemented in table.py that contains
                                          # -1 if some cards haven't been played, and the index otherwise
@@ -146,5 +151,5 @@ class Net(nn.Module):
     def UpdateFeatureVectors(self, pl, tbl, dck):
         self.CreatePlayFeaturesVector(pl, tbl, dck)
       #  self.CreateTrumpFeaturesVector(pl, tbl, dck)
-      return self.playFeaturesVector, 0 #self.trumpFeaturesVector  #instead of zero; just to keep
-                                                                    #the tuple structure
+        return self.playFeaturesVector, 0 #self.trumpFeaturesVector #instead of zero
+      
