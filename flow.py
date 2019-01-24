@@ -59,7 +59,7 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
 
 
     # First test for baseline
-    updateTestingTable(testingTable, testingTable) #No need to use the training table since it hasn't trained yet
+    testingTable = updateTestingTable(testingTable, testingTable) #No need to use the training table since it hasn't trained yet
     testing(testingTable, d, testEpochs)
 
     for i in range(totalCycles):
@@ -74,7 +74,7 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
 
         
-    printResults(testingTable)
+    printResults(testingTable, trainingEpochs, testEpochs, totalCycles)
 
 def training(t, d, trainingEpochs):
 
@@ -138,18 +138,21 @@ def updateTrainingTable(trainingTable):      #needed to reset the players.testin
 def testing(updatedTestingTable, d, testingEpochs):
 
     training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables and after setting players.testing == True
+
+    updatedTestingTable.calculateTestResults()
+
     print('Testing completed')
     
-def printResults(t):
+def printResults(t, trainingEpochs, testEpochs, totalCycles):
     graphs = [[], []]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
-    for i in range(len(t.testingScores)):
-        graphs[0].append(t.testingScores[i][0])
-        graphs[1].append(t.testingScores[i][1])
-    plt.plot(np.cumsum(graphs[0]), '-b', label='Team 0 - network play')
-    plt.plot(np.cumsum(graphs[1]), '-r', label='Team 1 - random play' )
+    for i in range(len(t.testingCycleScoresTeam0)):
+        graphs[0].append(t.testingCycleScoresTeam0[i])
+        graphs[1].append(t.testingCycleScoresTeam1[i])
+    plt.plot((graphs[0]), '-b', label='Team 0 - network play')
+    plt.plot((graphs[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Team scores during testing')
-    plt.xlabel('Testing tricks')
+    plt.title('Average round scores during testing (Traningepochs=' + str(trainingEpochs) + ' Testingepochs=' + str(testEpochs) + ' Cycles=' + str(totalCycles) + ')')
+    plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
     plt.show()
@@ -160,6 +163,6 @@ def printResults(t):
 
 # The interesting part:
 start = time.time()
-cycle(1000, 100, 3)
+cycle(1000, 10, 10)
 
 
