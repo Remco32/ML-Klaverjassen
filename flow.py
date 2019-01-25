@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
+import time
+
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
 printEpoch, saveEpoch = 100, 10
@@ -148,21 +151,35 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     for i in range(len(t.testingCycleScoresTeam0)):
         graphs[0].append(t.testingCycleScoresTeam0[i])
         graphs[1].append(t.testingCycleScoresTeam1[i])
+
+    saveToFile(np.array(graphs, dtype='float'))
+
     plt.plot((graphs[0]), '-b', label='Team 0 - network play')
     plt.plot((graphs[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing (Traningepochs=' + str(trainingEpochs) + ' Testingepochs=' + str(testEpochs) + ' Cycles=' + str(totalCycles) + ')')
+    plt.title('Average round scores during testing\n Totals: Traningepochs=' + str(totalCycles*trainingEpochs) + ' Testingepochs=' + str(totalCycles*testEpochs))
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
     plt.show()
 
+def saveToFile(data):
+
+    #Check for folder
+    currentTime = time.strftime("%Y%m%d-%H%M%S")
+
+    SAVEFOLDER = os.path.dirname(__file__) + '/data/' + currentTime
+
+    if not os.path.exists(SAVEFOLDER):
+        os.makedirs(SAVEFOLDER)
+
+    #TODO save hyperparameters as filename or in the file
+    np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",")
+
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
-
-
-# The interesting part:
 start = time.time()
-cycle(1000, 10, 10)
+# The interesting part:
+cycle(10, 10, 5)
 
 
