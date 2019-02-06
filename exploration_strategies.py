@@ -3,6 +3,7 @@ import math
 
 #TODO write a main class for handling all sorts of exploration strategies, i.e. you only have to call the main function of this file, not a sub function
 
+# NOTE: Please pass on the subset of cards in the hand that are legal to play.
 
 
 def diminishingEpsilonGreedy(greedyAction, epsilon, playerHand, currentEpoch, totalEpocs):
@@ -22,11 +23,10 @@ def diminishingEpsilonGreedy(greedyAction, epsilon, playerHand, currentEpoch, to
 def epsilonGreedy(greedyAction, explorationRate, playerHand):
     randomValue = rnd.uniform(0, 1) #between 0 and 1, float
     if randomValue < explorationRate:
-        return rnd.choice(playerHand) # pick random option #TODO could pick illegal action
+        return rnd.choice(playerHand) # pick random option
     else:
         return greedy(greedyAction)
     
-#TODO: Placeholder. We can implement the function that picks the best legal move here
 def greedy(greedyAction):
     return greedyAction
 
@@ -34,8 +34,6 @@ def greedy(greedyAction):
 # top-most action to be overly-dominant, which isn't a good exploration strategy to begin with.
 
 #See also http://fse.studenttheses.ub.rug.nl/15450/ and https://www.cs.mcgill.ca/~cs526/roger.pdf for pseudocode and the Boltzmann equation
-
-#TODO NOTE! Untested: PyTorch with CUDA is causing me blue screens. That has to be resolved before I can test the code thoroughly.
 
 def boltzmannExploration(explorationRate, playerHand, outputLayer):
     randomValue = rnd.uniform(0, 1) #between 0 and 1, float

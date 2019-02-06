@@ -11,6 +11,7 @@ import player
 import random as rnd
 import learn
 import torch
+import numpy as np
 
 
 class Table:
@@ -29,6 +30,8 @@ class Table:
         self.currentEpoch = 0;
         self.maximumEpoch = 0;
         self.testingScores = []      #it will become a 2xN matrix, where N is the number of testing rounds
+        self.testingCycleScoresTeam0 = [] #Fills up with the average score of a team for each cycle
+        self.testingCycleScoresTeam1 = []
         
        
 
@@ -188,4 +191,19 @@ class Table:
     def whoWinsRound(self):
         pass
 
+    def calculateTestResults(self):
+        # Convert to an array
+        array = np.array(self.testingScores, dtype='int')
 
+        scoreTeam0 = 0
+        scoreTeam1 = 0
+        j = 0
+
+        for i in range(len(self.testingScores)):
+            if i % 8 == 7:
+                scoreTeam0 += array[i,0]
+                scoreTeam1 += array[i,1]
+                j += 1
+
+        self.testingCycleScoresTeam0.append(scoreTeam0/j)
+        self.testingCycleScoresTeam1.append(scoreTeam1/j)
