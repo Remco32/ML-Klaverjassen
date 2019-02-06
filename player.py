@@ -60,7 +60,6 @@ class Player:
         return h
     
     def Play(self, tab, d):
-        self.feat = self.net.UpdateFeatureVectors(self, tab, d)[0]
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
                 c.isPlayable = True
@@ -82,6 +81,7 @@ class Player:
 
         
     def NetPlay(self, tbl, dck):
+        self.feat = self.net.UpdateFeatureVectors(self, tbl, dck)[0]
         self.idPlayable = []
         for i,c in enumerate(self.feat):
             if i < 32:   #only the hand

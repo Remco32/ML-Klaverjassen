@@ -132,6 +132,7 @@ def updateTestingTable(trainingTable, testingTable):
 def updateTrainingTable(trainingTable):      #needed to reset the players.testing boolean
     for p in trainingTable.players:
         p.testing = False
+        p.behaviour = 'Network'
 
     return trainingTable
 
@@ -145,8 +146,8 @@ def printResults(t):
     for i in range(len(t.testingScores)):
         graphs[0].append(t.testingScores[i][0])
         graphs[1].append(t.testingScores[i][1])
-    plt.plot(np.cumsum(graphs[0]), '-b', label='Team 0 - network play')
-    plt.plot(np.cumsum(graphs[1]), '-r', label='Team 1 - random play' )
+    plt.plot(graphs[0], '-b', label='Team 0 - network play')
+    plt.plot(graphs[1], '-r', label='Team 1 - random play' )
     plt.legend()
     plt.title('Team scores during testing')
     plt.xlabel('Testing tricks')
@@ -160,6 +161,6 @@ def printResults(t):
 
 # The interesting part:
 start = time.time()
-cycle(1000, 100, 3)
+cycle(5000, 100, 10)
 
 
