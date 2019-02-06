@@ -62,12 +62,20 @@ class Player:
     def Play(self, tab, d):
         self.feat = self.net.UpdateFeatureVectors(self, tab, d)[0]
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
-            for c in self.hand:
-                c.isPlayable = True
-            self.subHand = [c for c in self.hand if c.isPlayable == True]
-            self.played = self.NetPlay(tab, d)[0]
-            for c in self.hand:
-                c.isPlayable = False
+            if self.behaviour == 'Network':
+                for c in self.hand:
+                    c.isPlayable = True
+                self.subHand = [c for c in self.hand if c.isPlayable == True]
+                self.played = self.NetPlay(tab, d)[0]
+                for c in self.hand:
+                    c.isPlayable = False
+            elif self.behaviour == 'Random':
+                for c in self.hand:
+                    c.isPlayable = True
+                self.subHand = [c for c in self.hand if c.isPlayable == True]
+                self.played = self.RandomPlay(tab, d)[0]
+                for c in self.hand:
+                    c.isPlayable = False
                         
         else:
             if self.behaviour == 'Random':
