@@ -35,6 +35,8 @@ class Table:
         self.testingTeam0TotalWins = 0   # To store the total wins during testing
         self.testingTeam1TotalWins = 0
         self.testingWinRatioTeam0 = []
+        self.testingTeam0IncrementalWins = []
+        self.testingTeam1IncrementalWins = []
 
        
 
@@ -161,8 +163,14 @@ class Table:
         if self.winnerPlayer.testing:
            if self.winnerPlayer.team == 0:
                self.testingTeam0TotalWins += 1
+               self.testingTeam0IncrementalWins.append(self.testingTeam0TotalWins)
+               self.testingTeam1IncrementalWins.append(self.testingTeam1TotalWins)
+
            else:
                self.testingTeam1TotalWins += 1
+               self.testingTeam1IncrementalWins.append(self.testingTeam1TotalWins)
+               self.testingTeam0IncrementalWins.append(self.testingTeam0TotalWins)
+
 
 
 

@@ -157,7 +157,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
         plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
     epochString = "Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
-
+    plt.subplot(121)
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
@@ -165,23 +165,37 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
-    plt.show()
+    #plt.show()
 
 
-    plotDataWinratios = [[], []]
-    for i in range(len(t.testingCycleScoresTeam0)):
-        plotDataWinratios[0].append(t.testingWinRatioTeam0[i])
-        plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
+    # plotDataWinratios = [[], []]
+    # for i in range(len(t.testingCycleScoresTeam0)):
+    #     plotDataWinratios[0].append(t.testingWinRatioTeam0[i])
+    #     plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
+
+    # plt.subplot(122)
+    # plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
+    # plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
+    # plt.legend()
+    # plt.title('Winrate ratio both teams\n Totals: ' + epochString)
+    # plt.xlabel('Testing cycle')
+    # plt.ylabel('Winrate ratio')
+    # plt.grid()
+    # plt.show()
 
 
-    plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
-    plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
+
+
+    plt.subplot(122)
+    plt.plot((t.testingTeam0IncrementalWins), '-b', label='Team 0 - network play')
+    plt.plot((t.testingTeam1IncrementalWins), '-r', label='Team 1 - random play')
     plt.legend()
     plt.title('Winrate ratio both teams\n Totals: ' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
     plt.show()
+
 
     saveToFile(t, epochString, plotDataScores, plotDataWinratios)
 
@@ -207,7 +221,7 @@ def saveToFile(table, epochString, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(1000, 100, 10)
+cycle(10, 10, 10)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
