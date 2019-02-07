@@ -155,12 +155,12 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
         plotDataScores[0].append(t.testingCycleScoresTeam0[i])
         plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
+    epochString = "Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
 
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing\n Totals: Traningepochs=' +
-              str(totalCycles*trainingEpochs) + ' Testingepochs=' + str(totalCycles*testEpochs))
+    plt.title('Average round scores during testing\n Totals: ' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
@@ -176,17 +176,16 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
     plt.legend()
-    plt.title('Winrate ratio both teams\n Totals: Traningepochs=' + str(
-        totalCycles * trainingEpochs) + ' Testingepochs=' + str(totalCycles * testEpochs))
+    plt.title('Winrate ratio both teams\n Totals: ' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
     plt.show()
 
-    saveToFile(t, plotDataScores, plotDataWinratios)
+    saveToFile(t, epochString, plotDataScores, plotDataWinratios)
 
 
-def saveToFile(table, scores, winrateRatio):
+def saveToFile(table, epochString, scores, winrateRatio):
 
     #Check for folder
     currentTime = time.strftime("%Y%m%d-%H%M%S")
@@ -198,7 +197,7 @@ def saveToFile(table, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon)
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
