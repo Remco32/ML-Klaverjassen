@@ -63,10 +63,10 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
     #TODO: This is a workaround for a bug caused by untested code being pushed
     #training(trainingTable, d, 1)
     # First test for baseline
-    #testingTable = updateTestingTable(trainingTable, testingTable) #No need to use the training table since it hasn't trained yet
-    #testing(testingTable, d, testEpochs)
+    testingTable = updateTestingTable(trainingTable, testingTable) #No need to use the training table since it hasn't trained yet
+    testing(testingTable, d, testEpochs)
 
-    for i in range(totalCycles):
+    for currentCycle in range(totalCycles):
         print('Updating the training table')
         trainingTable = updateTrainingTable(trainingTable)
         print('Training...')
@@ -75,9 +75,10 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         testingTable = updateTestingTable(trainingTable, testingTable)
         print('Testing...')
         testing(testingTable, d, testEpochs)
-        print("Cycle " +str(i+1)+ " out of " + str(totalCycles) + " finished\n")
+        print("Cycle " + str(currentCycle+1)+ " out of " + str(totalCycles) + " finished\n")
 
-        
+        print("Expected time needed remaining cycles: {:.4} min".format(((time.time() - start) / 60) / (currentCycle+1) * totalCycles-currentCycle+1))
+
     printResults(testingTable, trainingEpochs, testEpochs, totalCycles)
 
 def training(t, d, trainingEpochs):
@@ -107,7 +108,7 @@ def training(t, d, trainingEpochs):
 
                     
 
-        if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} s".format(currentEpoch, trainingEpochs, time.time() - start))
+        if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} min".format(currentEpoch, trainingEpochs, (time.time() - start)/60))
     #    if currentEpoch == 100:
     #        t.SaveState(SAVEFOLDER)
     #        print("Saved model parameters")
@@ -197,7 +198,7 @@ def saveToFile(table, epochString, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + " Totals:" + epochString
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
@@ -206,7 +207,7 @@ def saveToFile(table, epochString, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(100, 100, 3)
+cycle(1000, 100, 10)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
