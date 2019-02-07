@@ -27,12 +27,15 @@ class Table:
         self.Order(self.dealer + 1)           #ordering the players with respect to the PLAYER STARTING THE TRICK (refer to cycleID, this means 3+1=0)
         
         # For variables used in running the experiments
-        self.currentEpoch = 0;
-        self.maximumEpoch = 0;
+        self.currentEpoch = 0
+        self.maximumEpoch = 0
         self.testingScores = []      #it will become a 2xN matrix, where N is the number of testing rounds
         self.testingCycleScoresTeam0 = [] #Fills up with the average score of a team for each cycle
         self.testingCycleScoresTeam1 = []
-        
+        self.testingTeam0TotalWins = 0   # To store the total wins during testing
+        self.testingTeam1TotalWins = 0
+        self.testingWinRatioTeam0 = []
+
        
 
 
@@ -154,6 +157,15 @@ class Table:
 
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
 
+        # Increment wincount if we are testing
+        if self.winnerPlayer.testing:
+           if self.winnerPlayer.team == 0:
+               self.testingTeam0TotalWins += 1
+           else:
+               self.testingTeam1TotalWins += 1
+
+
+
         if self.players[0].hand == []:
             self.roundScore[self.winnerPlayer.team] += 10
             
@@ -193,6 +205,8 @@ class Table:
         pass
 
     def calculateTestResults(self):
+        # Calculate scores
+
         # Convert to an array
         array = np.array(self.testingScores, dtype='int')
 
@@ -201,10 +215,15 @@ class Table:
         j = 0
 
         for i in range(len(self.testingScores)):
-            if i % 8 == 7:
+            if i % 8 == 7: # Only use the final score of a round
                 scoreTeam0 += array[i,0]
                 scoreTeam1 += array[i,1]
                 j += 1
 
         self.testingCycleScoresTeam0.append(scoreTeam0/j)
         self.testingCycleScoresTeam1.append(scoreTeam1/j)
+
+        #Calculate winrate
+
+        winRatio = self.testingTeam0TotalWins/(self.testingTeam0TotalWins + self.testingTeam1TotalWins)
+        self.testingWinRatioTeam0.append(winRatio)

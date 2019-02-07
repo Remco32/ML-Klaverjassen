@@ -12,8 +12,8 @@ import time
 
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
-printEpoch, saveEpoch = 100, 10
-
+printEpoch, saveEpoch = 1000, 1000
+pauseTime = 0.1     # In seconds. For making sure lists and such are filled - filthy dirty workaround (aka a hack)
 
 # Load parameters?
 #loadP = 0 #TODO check if loading works like it should
@@ -60,10 +60,11 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
     # create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
     testingTable = table.Table(16, 0.01, 0.9)
 
-
+    #TODO: This is a workaround for a bug caused by untested code being pushed
+    #training(trainingTable, d, 1)
     # First test for baseline
-    testingTable = updateTestingTable(testingTable, testingTable) #No need to use the training table since it hasn't trained yet
-    testing(testingTable, d, testEpochs)
+    #testingTable = updateTestingTable(trainingTable, testingTable) #No need to use the training table since it hasn't trained yet
+    #testing(testingTable, d, testEpochs)
 
     for i in range(totalCycles):
         print('Updating the training table')
@@ -111,6 +112,8 @@ def training(t, d, trainingEpochs):
     #        t.SaveState(SAVEFOLDER)
     #        print("Saved model parameters")
 
+        #time.sleep(pauseTime) #Workaround for program accessing lists etc. that aren't filled yet after thousands of epochs, probably due to some CPU magic
+
 
 #print("Training completed succesfully! \tElapsed time: {:.4} s \nShowing plots...".format(time.time() - start))
 
@@ -147,23 +150,43 @@ def testing(updatedTestingTable, d, testingEpochs):
     print('Testing completed')
     
 def printResults(t, trainingEpochs, testEpochs, totalCycles):
-    graphs = [[], []]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
+    plotDataScores = [[], []]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
     for i in range(len(t.testingCycleScoresTeam0)):
-        graphs[0].append(t.testingCycleScoresTeam0[i])
-        graphs[1].append(t.testingCycleScoresTeam1[i])
+        plotDataScores[0].append(t.testingCycleScoresTeam0[i])
+        plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
-    saveToFile(np.array(graphs, dtype='float'))
 
-    plt.plot((graphs[0]), '-b', label='Team 0 - network play')
-    plt.plot((graphs[1]), '-r', label='Team 1 - random play' )
+    plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
+    plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing\n Totals: Traningepochs=' + str(totalCycles*trainingEpochs) + ' Testingepochs=' + str(totalCycles*testEpochs))
+    plt.title('Average round scores during testing\n Totals: Traningepochs=' +
+              str(totalCycles*trainingEpochs) + ' Testingepochs=' + str(totalCycles*testEpochs))
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
     plt.show()
 
-def saveToFile(data):
+
+    plotDataWinratios = [[], []]
+    for i in range(len(t.testingCycleScoresTeam0)):
+        plotDataWinratios[0].append(t.testingWinRatioTeam0[i])
+        plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
+
+
+    plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
+    plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
+    plt.legend()
+    plt.title('Winrate ratio both teams\n Totals: Traningepochs=' + str(
+        totalCycles * trainingEpochs) + ' Testingepochs=' + str(totalCycles * testEpochs))
+    plt.xlabel('Testing cycle')
+    plt.ylabel('Winrate ratio')
+    plt.grid()
+    plt.show()
+
+    saveToFile(t, plotDataScores, plotDataWinratios)
+
+
+def saveToFile(table, scores, winrateRatio):
 
     #Check for folder
     currentTime = time.strftime("%Y%m%d-%H%M%S")
@@ -173,13 +196,18 @@ def saveToFile(data):
     if not os.path.exists(SAVEFOLDER):
         os.makedirs(SAVEFOLDER)
 
-    #TODO save hyperparameters as filename or in the file
-    np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",")
+    data = np.concatenate((np.array(scores), np.array(winrateRatio)))
+
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon)
+
+    #TODO save dimensions (layers, amount of nodes) to file as well
+    np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
 
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
 start = time.time()
 # The interesting part:
-cycle(10, 10, 5)
+cycle(100, 100, 3)
 
 
+# https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8

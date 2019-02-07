@@ -52,7 +52,7 @@ class Player:
     
     def Pop(self):    
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
-        return popped 
+        return popped
        
 
     def handAsTuple(self):
@@ -88,6 +88,7 @@ class Player:
 
         
     def NetPlay(self, tbl, dck):
+        global cc #(Possibly) Fixes assignment error breaking the program after many iterations
         self.idPlayable = []
         for i,c in enumerate(self.feat):
             if i < 32:   #only the hand
@@ -122,6 +123,7 @@ class Player:
         
     def RandomPlay(self, tab, d):     #play a random card in AMS rules
         playableCards = 0
+
         for c in self.hand:                     #first try to flag cards in suit as playable
             if c.suit == tab.leadingSuit:
                 c.isPlayable = True
@@ -162,7 +164,7 @@ class Player:
                 c.isPlayable = True 
         self.subHand = [c for c in self.hand if c.isPlayable == True]
         tmp = self.NetPlay(tab,d)
-        #self.played = tmp[0]     
+        #self.played = tmp[0]
         #self.playedID =tmp[1]
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
