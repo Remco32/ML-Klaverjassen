@@ -52,7 +52,7 @@ class Player:
     
     def Pop(self):    
         popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
-        return popped
+        return popped 
        
 
     def handAsTuple(self):
@@ -62,26 +62,24 @@ class Player:
     def Play(self, tab, d):
         self.feat = self.net.UpdateFeatureVectors(self, tab, d)[0]
         if tab.WhoPlays()[0] == self:    #if he's starting the trick
+            for c in self.hand:
+                c.isPlayable = True
             if self.behaviour == 'Network':
-                for c in self.hand:
-                    c.isPlayable = True
                 self.subHand = [c for c in self.hand if c.isPlayable == True]
-                self.played = self.NetPlay(tab, d)[0]
+                self.played = self.NetworkPlay(tab, d)[0]
                 for c in self.hand:
                     c.isPlayable = False
             elif self.behaviour == 'Random':
-                for c in self.hand:
-                    c.isPlayable = True
                 self.subHand = [c for c in self.hand if c.isPlayable == True]
-                self.played = self.RandomPlay(tab, d)[0]
+                self.played = self.RandomPlay(tab, d)
                 for c in self.hand:
                     c.isPlayable = False
                         
         else:
             if self.behaviour == 'Random':
-                self.RandomPlay(tab, d)
+                self.played = self.RandomPlay(tab, d)
             elif self.behaviour == 'Network':
-                self.NetworkPlay(tab, d)
+                self.played = self.NetworkPlay(tab, d)[0]
             else:
                 print('Unknown rules. Input either \'Simple\', \'Amsterdam\'')
 
@@ -124,7 +122,6 @@ class Player:
         
     def RandomPlay(self, tab, d):     #play a random card in AMS rules
         playableCards = 0
-        
         for c in self.hand:                     #first try to flag cards in suit as playable
             if c.suit == tab.leadingSuit:
                 c.isPlayable = True
@@ -139,13 +136,12 @@ class Player:
         if playableCards == 0:                  #otherwise flag any other card
             for c in self.hand:
                 c.isPlayable = True
-                
         self.subHand = [c for c in self.hand if c.isPlayable == True]
-        self.played = self.Pop()
+        tmp = self.Pop()
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
                 c.isPlayable = False
-
+        return tmp
 
     def NetworkPlay(self, tab, d):      #play with neural network in AMS rules
         playableCards = 0
@@ -166,9 +162,10 @@ class Player:
                 c.isPlayable = True 
         self.subHand = [c for c in self.hand if c.isPlayable == True]
         tmp = self.NetPlay(tab,d)
-        self.played = tmp[0]     
-        self.playedID =tmp[1]
+        #self.played = tmp[0]     
+        #self.playedID =tmp[1]
         if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
                 c.isPlayable = False
 
+        return tmp

@@ -93,6 +93,7 @@ class Table:
         #cardsOnTable has one less element (it doesn't have the last played card
         #because no player cares about that)
         self.cardsOnTable = []
+        self.leadingSuit = 'none'     #changed when the first player plays
         for i,p in enumerate(self.orderedPlayers):
             if i == 0:
                 self.playedCards  = [p.Play(self, d)]   #play the first card
