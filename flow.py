@@ -147,8 +147,9 @@ def testing(updatedTestingTable, d, testingEpochs):
     training(updatedTestingTable, d, testingEpochs) # Reusing old code with new tables and after setting players.testing == True
 
     updatedTestingTable.calculateTestResults()
-
+    print('Winrate team 0 this cycle: ' + str(updatedTestingTable.testingWinRatioTeam0[-1]))
     print('Testing completed')
+
     
 def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plotDataScores = [[], []]    #the testing scores for the teams, where team 0 is network playing and team 1 is random
@@ -212,7 +213,7 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(100, 100, 2)
+cycle(100, 100, 30)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
