@@ -66,7 +66,9 @@ class Player:
                 c.isPlayable = True
             if self.behaviour == 'Network':
                 self.subHand = [c for c in self.hand if c.isPlayable == True]
-                self.played = self.NetworkPlay(tab, d)[0]
+                self.played = self.NetworkPlay(tab, d)[0]  # To ensure backprop
+                if len(self.subHand) == 1:
+                    self.played = self.subHand[0]             # For it to not break once in a million epochs
                 for c in self.hand:
                     c.isPlayable = False
             elif self.behaviour == 'Random':

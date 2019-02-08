@@ -76,8 +76,8 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         print('Testing...')
         testing(testingTable, d, testEpochs)
         print("Cycle " + str(currentCycle+1)+ " out of " + str(totalCycles) + " finished\n")
-
-        print("Expected time needed remaining cycles: {:.4} min".format(((time.time() - start) / 60) / (currentCycle+1) * totalCycles-currentCycle+1))
+        remainingTime = (((time.time() - start) / 60) / (currentCycle+1)) * ((totalCycles+1)-(currentCycle+1))
+        print("Expected time needed remaining cycles: {:.4} min".format(remainingTime))
 
     printResults(testingTable, trainingEpochs, testEpochs, totalCycles)
 
@@ -156,54 +156,45 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
         plotDataScores[0].append(t.testingCycleScoresTeam0[i])
         plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
-    epochString = "Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
+    #epochString = "\n Totals: Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
+    epochString = ''
     plt.subplot(121)
+    #plt.rcParams.update({'font.size': 12})
+
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing\n Totals: ' + epochString)
+    plt.title('Average round scores during testing' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
     #plt.show()
 
 
-    # plotDataWinratios = [[], []]
-    # for i in range(len(t.testingCycleScoresTeam0)):
-    #     plotDataWinratios[0].append(t.testingWinRatioTeam0[i])
-    #     plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
-
-    # plt.subplot(122)
-    # plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
-    # plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
-    # plt.legend()
-    # plt.title('Winrate ratio both teams\n Totals: ' + epochString)
-    # plt.xlabel('Testing cycle')
-    # plt.ylabel('Winrate ratio')
-    # plt.grid()
-    # plt.show()
-
-
-
-
     plt.subplot(122)
-    plt.plot((t.testingTeam0IncrementalWins), '-b', label='Team 0 - network play')
-    plt.plot((t.testingTeam1IncrementalWins), '-r', label='Team 1 - random play')
+    plotDataWinratios = [[], []]
+    for i in range(len(t.testingCycleScoresTeam0)):
+        plotDataWinratios[0].append(t.testingWinRatioTeam0[i])
+        plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
+
+
+    plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
+    plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
     plt.legend()
-    plt.title('Winrate ratio both teams\n Totals: ' + epochString)
+    plt.title('Winrate both teams' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
-    plt.show()
+    #plt.show()
 
+    currentTime = time.strftime("%Y%m%d-%H%M%S")
+    saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
+    plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure.png')
 
-    saveToFile(t, epochString, plotDataScores, plotDataWinratios)
-
-
-def saveToFile(table, epochString, scores, winrateRatio):
+def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
     #Check for folder
-    currentTime = time.strftime("%Y%m%d-%H%M%S")
+    #currentTime = time.strftime("%Y%m%d-%H%M%S")
 
     SAVEFOLDER = os.path.dirname(__file__) + '/data/' + currentTime
 
@@ -221,7 +212,7 @@ def saveToFile(table, epochString, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(10, 10, 10)
+cycle(100, 100, 2)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
