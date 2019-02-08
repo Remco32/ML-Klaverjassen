@@ -74,16 +74,24 @@ class Player:
                 self.played = self.RandomPlay(tab, d)
                 for c in self.hand:
                     c.isPlayable = False
+            elif self.behaviour in ('MonteCarlo', 'MonteCarlo2'):
+                self.subHand = [c for c in self.hand if c.isPlayable == True]
+                self.played = self.MonteCarloPlay(tab, d)
+                for c in self.hand:
+                    c.isPlayable = False
                         
         else:
             if self.behaviour == 'Random':
                 self.played = self.RandomPlay(tab, d)
             elif self.behaviour == 'Network':
                 self.played = self.NetworkPlay(tab, d)[0]
+            elif self.behaviour in ('MonteCarlo', 'MonteCarlo2'):
+                self.played = self.MonteCarloPlay(tab, d)
             else:
                 print('Unknown rules. Input either \'Simple\', \'Amsterdam\'')
 
-        self.hand.remove(self.played)
+        if self.behaviour != 'MonteCarlo':
+            self.hand.remove(self.played)
         return self.played             #self.played is assigned within each of the play methods below
 
         
@@ -170,4 +178,33 @@ class Player:
             for c in self.hand:
                 c.isPlayable = False
 
+        return tmp
+
+    def MonteCarloPlay(self, tab, d):     # Perform a Monte Carlo simulation
+        if self.behaviour == "MonteCarlo2":
+            tmp = self.played
+        else:
+            playableCards = 0
+
+            for c in self.hand:  # first try to flag cards in suit as playable
+                if c.suit == tab.leadingSuit:
+                    c.isPlayable = True
+                    playableCards += 1
+
+            # if none, then try flag trumps as playable (of course checking if playableCards == 0
+            if playableCards == 0:
+                for c in self.hand:  # also implies that trump != leading suit, so that cards are not counted twice)
+                    if c.suit == d.trumpSuit:
+                        c.isPlayable = True
+                        playableCards += 1
+
+            if playableCards == 0:  # otherwise flag any other card
+                for c in self.hand:
+                    c.isPlayable = True
+
+            self.subHand = [c for c in self.hand if c.isPlayable == True]
+            tmp = self.Pop()
+        if self.hand != []:  # after playing the card, all the others are flagged as unplayable before the next trick
+            for c in self.hand:
+                c.isPlayable = False
         return tmp

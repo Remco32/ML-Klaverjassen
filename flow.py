@@ -2,6 +2,7 @@ import table
 import deck
 import random as rnd
 import learn
+import montecarlo
 import time
 import numpy as np
 import matplotlib
@@ -73,6 +74,8 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         training(trainingTable, d, trainingEpochs)
         print('Updating the test table')
         testingTable = updateTestingTable(trainingTable, testingTable)
+        #print('Running simulation')
+        #simulate(testingTable, d, trainingEpochs)  # Uncomment to run, WARNING: TAKES A CONSIDERABLE AMOUNT OF TIME
         print('Testing...')
         testing(testingTable, d, testEpochs)
         print("Cycle " + str(currentCycle+1)+ " out of " + str(totalCycles) + " finished\n")
@@ -80,6 +83,28 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         print("Expected time needed remaining cycles: {:.4} min".format(((time.time() - start) / 60) / (currentCycle+1) * totalCycles-currentCycle+1))
 
     printResults(testingTable, trainingEpochs, testEpochs, totalCycles)
+
+def simulate(t, d, trainingEpochs):
+    ''' Runs the Monte Carlo simulation''' 
+    for currentEpoch in range(trainingEpochs):
+        #Set experiment information in table
+        t.currentEpoch = currentEpoch
+        sim = montecarlo.Simulation(d, t)
+        d.SetTrump(rnd.choice(d.suits))
+        d.DivideCards()
+        t.DealCards(d)
+        print("Simulating...")
+
+        while t.players[0].hand != []:
+            sim.run(d, t)
+            t.PlayCards(d)
+            winner = t.WhoWinsTrick(d)
+            t.testingScores.append(t.roundScore.copy())
+        if currentEpoch % printEpoch == 0:
+            print("Simulation {} of {} \t\t\tElapsed time: {:.4} min".format(
+                currentEpoch, trainingEpochs, (time.time() - start)/60))
+    t.SetPlayerBehaviour(0, "Network")
+    t.SetPlayerBehaviour(2, "Network")
 
 def training(t, d, trainingEpochs):
 
