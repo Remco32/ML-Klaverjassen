@@ -12,7 +12,7 @@ import time
 
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
-printEpoch, saveEpoch = 1000, 1000
+printEpoch, saveEpoch = 100, 1000
 pauseTime = 0.1     # In seconds. For making sure lists and such are filled - filthy dirty workaround (aka a hack)
 
 # Load parameters?
@@ -190,7 +190,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plt.plot((t.testingTeam0IncrementalWins), '-b', label='Team 0 - network play')
     plt.plot((t.testingTeam1IncrementalWins), '-r', label='Team 1 - random play')
     plt.legend()
-    plt.title('Winrate ratio both teams\n Totals: ' + epochString)
+    plt.title('Won games\n Totals: ' + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
@@ -221,7 +221,7 @@ def saveToFile(table, epochString, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(10, 10, 10)
+cycle(1000, 100, 20)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8

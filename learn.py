@@ -32,13 +32,17 @@ class Net(nn.Module):
     def __init__(self, nFeat):
         super(Net, self).__init__()
         self.conn1 = nn.Linear(nFeat, 50)             #since each layer will take a lin combination of the previous layer's nodes
-        self.conn2 = nn.Linear(50,50)
-        self.conn3 = nn.Linear(50, 32)                 #32 is the deck size
+        self.conn2 = nn.Linear(50, 100)
+        self.conn3 = nn.Linear(100, 150)
+        self.conn4 = nn.Linear(150, 150)
+        self.conn5 = nn.Linear(150, 32)
 
     def forward(self, tensor):
         tensor = torch.sigmoid(self.conn1(tensor))   #pass the input layer to the first hidden layer through connection 1 defined in __init__
         tensor = torch.sigmoid(self.conn2(tensor))   #pass the first hidden layer to the second hidden layer through connection 2
-        tensor = self.conn3(tensor)    #pass the second hidden layer to the output layer through connection 3 without any activation function
+        tensor = torch.sigmoid(self.conn3(tensor))    #pass the second hidden layer to the fourth layer
+        tensor = torch.sigmoid(self.conn4(tensor))
+        tensor = self.conn5(tensor)
         return tensor
 
 
