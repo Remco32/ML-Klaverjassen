@@ -31,12 +31,14 @@ class Simulation:
     def setupSimulation(self, tab):
         '''Sets up the simulation at the start of a round.'''
         self.storeHands(tab)
-        self.adjustedDeck = np.zeros(32)
-        self.handScores = [[] for i in range(len(tab.players[self.playerID].hand))]
-        self.means = [0 for i in range(len(tab.players[self.playerID].hand))]
-        if len(tab.players[0].hand) == 8:
+        self.adjustedDeck = np.zeros(32) 
+        self.handScores = [[] for i in range(len(tab.players[self.playerID].hand))] # Clears the scores from the hands.
+        self.means = [0 for i in range(len(tab.players[self.playerID].hand))] # Stores the average means based upon the index.
+
+        if len(tab.players[0].hand) == 8: # Resets the scores at the start of the round.
             tab.roundScore = [0, 0]
-        for p in tab.playerID: 
+
+        for p in tab.playerID: # Sets the selected player as Montecarlo, rest at random for faster simulation (can use a Network in theory).
             tab.SetPlayerBehaviour(p, "MonteCarlo" if p == self.playerID else "Random")
 
     def adjustDeck(self, d, tab):
@@ -88,6 +90,21 @@ class Simulation:
             self.means[card] = np.mean(self.handScores[card])
 
         self.bestCard = tab.players[self.playerID].hand[self.means.index(np.max(self.means))] # Assign the card with the best average.
+
+        # We need to be sure it uses a card from the trump suit when it still has, which may not provide the best score.
+        
+        self.sortedMeans = sorted(self.means, reverse=True) # Sorting the means from max to min
+        self.bestCardIdx = 0
+        self.hasATrump = False
+        for card in tab.players[self.playerID].hand: # Searching for trumps in hand
+            if card.suit == d.trumpSuit:
+                self.hasATrump = True
+
+        if self.hasATrump: # If so, go through the hand and keep trying until we hit the trump with the best average score.
+            while self.bestCard.suit != d.trumpSuit:
+                self.bestCardIdx += 1
+                self.bestCard = tab.players[self.playerID].hand[self.means.index(self.sortedMeans[self.bestCardIdx])]
+                
         self.returnHands(tab)                               # We give the original hands backs to the players.
         tab.players[self.playerID].played = self.bestCard
         tab.SetPlayerBehaviour(self.playerID, "MonteCarlo2") # Setting to the second mode so it actually discards the card away.
