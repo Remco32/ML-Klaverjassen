@@ -69,6 +69,27 @@ class Simulation:
                     tab.players[p].hand.append(d.cards[self.cardPool[card + m * len(tab.players[self.playerID].hand)]])
                 m += 1
 
+    def checkTrump(self, d, tab):
+        '''Ensures that a trump card is played if there's still one in hand, even if that one does not have the best average score.
+        If there are multiple trump cards in hand, it will use the one with the best average. '''
+        self.bestCardIdx = 0
+        self.hasATrump = False
+
+        # Sorting the means from max to min
+        self.sortedMeans = sorted(self.means, reverse=True)
+
+        # Searching for trumps in hand
+        for card in tab.players[self.playerID].hand:
+            if card.suit == d.trumpSuit:
+                self.hasATrump = True
+
+        # If so, go through the hand and keep trying until we hit the trump with the best average score.
+        if self.hasATrump:
+            while self.bestCard.suit != d.trumpSuit:
+                self.bestCardIdx += 1
+                self.bestCard = tab.players[self.playerID].hand[self.means.index(
+                    self.sortedMeans[self.bestCardIdx])]
+
     def run(self, d, tab):
         '''Runs the simulation.'''
         self.setupSimulation(tab)
@@ -90,21 +111,7 @@ class Simulation:
             self.means[card] = np.mean(self.handScores[card])
 
         self.bestCard = tab.players[self.playerID].hand[self.means.index(np.max(self.means))] # Assign the card with the best average.
-
-        # We need to be sure it uses a card from the trump suit when it still has, which may not provide the best score.
-        
-        self.sortedMeans = sorted(self.means, reverse=True) # Sorting the means from max to min
-        self.bestCardIdx = 0
-        self.hasATrump = False
-        for card in tab.players[self.playerID].hand: # Searching for trumps in hand
-            if card.suit == d.trumpSuit:
-                self.hasATrump = True
-
-        if self.hasATrump: # If so, go through the hand and keep trying until we hit the trump with the best average score.
-            while self.bestCard.suit != d.trumpSuit:
-                self.bestCardIdx += 1
-                self.bestCard = tab.players[self.playerID].hand[self.means.index(self.sortedMeans[self.bestCardIdx])]
-                
+        self.checkTrump(d, tab)        
         self.returnHands(tab)                               # We give the original hands backs to the players.
         tab.players[self.playerID].played = self.bestCard
         tab.SetPlayerBehaviour(self.playerID, "MonteCarlo2") # Setting to the second mode so it actually discards the card away.
