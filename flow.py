@@ -193,15 +193,17 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
         plotDataScores[0].append(t.testingCycleScoresTeam0[i])
         plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
-    #epochString = "\n Totals: Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
-    epochString = ''
+    epochString = "\n Totals: Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
+    #epochString = ''
+    currentTime = time.strftime("%Y%m%d-%H%M%S")
+
     plt.subplot(121)
     #plt.rcParams.update({'font.size': 12})
 
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing' + epochString)
+    plt.title('Average round scores during testing') # + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
@@ -216,15 +218,28 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
     plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
     plt.legend()
-    plt.title('Winrate both teams' + epochString)
+    plt.title('Winrate both teams') # + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
     #plt.show()
-
-    currentTime = time.strftime("%Y%m%d-%H%M%S")
     saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
-    plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure.png')
+    plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure1.png')
+    plt.close()
+
+    #plt.subplot(122)
+    plt.plot((t.testingTeam0IncrementalWins), '-b', label='Team 0 - network play')
+    plt.plot((t.testingTeam1IncrementalWins), '-r', label='Team 1 - random play')
+    plt.legend()
+    plt.title('Won games' + epochString)
+    plt.xlabel('Testing cycle')
+    plt.ylabel('Winrate ratio')
+    plt.grid()
+    #plt.show()
+    plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure2.png')
+
+    #saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
+
 
 def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
@@ -247,7 +262,7 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
 start = time.time()
 # The interesting part:
-cycle(10000, 100, 30)
+cycle(1000, 100, 10)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
