@@ -25,10 +25,9 @@ import torch.nn as nn
 import numpy as np
 import exploration_strategies as expl
 
-
 class Player:
 
-    def __init__(self, number, alpha, y):
+    def __init__(self, number, alpha, y): 
         self.position = number
         self.hand = []
         self.behaviour = 'Network'
@@ -37,38 +36,38 @@ class Player:
         else:
             self.team = 1
         self.handSum = 0
-
-        self.alpha = alpha  # learning rate
-        self.y = y  # discount rate
-        self.net = learn.Net(97)
-        self.opt = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
-        self.loss = nn.MSELoss()
+            
+        self.alpha  = alpha    #learning rate
+        self.y      = y        #discount rate
+        self.net    = learn.Net(97)     
+        self.opt    = torch.optim.SGD(self.net.parameters(), lr=self.alpha)
+        self.loss   = nn.MSELoss()
         self.reward = 0
         self.rewardArray = []
         self.weightedRewardArray = []
-        self.epsilon = 0.3  # exploration rate
-        # Boolean to toggle whether the network is training (with exploration) or testing.
-        self.testing = False
+        self.epsilon = 0.3 # exploration rate
+        self.testing = False # Boolean to toggle whether the network is training (with exploration) or testing.
 
-    def Pop(self):
-        popped = self.subHand.pop(rnd.randrange(0, len(self.subHand)))
+
+    
+    def Pop(self):    
+        popped = self.subHand.pop(rnd.randrange(0,len(self.subHand)))
         return popped
 
     def handAsTuple(self):
         h = [c.CardAsTuple() for c in self.hand]
         return h
-
+    
     def Play(self, tab, d):
         self.feat = self.net.UpdateFeatureVectors(self, tab, d)[0]
-        if tab.WhoPlays()[0] == self:  # if he's starting the trick
+        if tab.WhoPlays()[0] == self:    #if he's starting the trick
             for c in self.hand:
                 c.isPlayable = True
             if self.behaviour == 'Network':
                 self.subHand = [c for c in self.hand if c.isPlayable == True]
                 self.played = self.NetworkPlay(tab, d)[0]  # To ensure backprop
                 if len(self.subHand) == 1:
-                    # For it to not break once in a million epochs
-                    self.played = self.subHand[0]
+                    self.played = self.subHand[0]             # For it to not break once in a million epochs
                 for c in self.hand:
                     c.isPlayable = False
             elif self.behaviour == 'Random':
@@ -87,6 +86,8 @@ class Player:
                 self.played = self.RandomPlay(tab, d)
             elif self.behaviour == 'Network':
                 self.played = self.NetworkPlay(tab, d)[0]
+                if len(self.subHand) == 1:
+                    self.played = self.subHand[0]
             elif self.behaviour in ('MonteCarlo', 'MonteCarlo2'):
                 self.played = self.MonteCarloPlay(tab, d)
             else:
@@ -111,8 +112,7 @@ class Player:
         idP = self.FindAllowedMaximum()  # BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
         #Only changes the value for idP if an exploration step is taken, else uses idP given as the first argument
         if self.testing == False:
-            idP = expl.diminishingEpsilonGreedy(
-                idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
+            idP = expl.diminishingEpsilonGreedy(idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
         for c in self.subHand:
             if c.index == idP:
                 cc = c
@@ -120,18 +120,18 @@ class Player:
 
     def FindAllowedMaximum(self):
         with torch.no_grad():
-            outFeat = self.output.clone().detach().numpy().tolist()  # create a list
-        # sort it in descending order
-        outFeatSorted = sorted(outFeat, reverse=True)
-        element = outFeatSorted[0]
+            outFeat = self.output.clone().detach().numpy().tolist() #create a list
+        outFeatSorted = sorted(outFeat, reverse=True)  #sort it in descending order
+        element   = outFeatSorted[0]
         elementID = outFeat.index(element)
         for element in outFeatSorted:
             elementID = outFeat.index(element)
             if elementID in self.idPlayable:
                 break
         return elementID
-
-    def RandomPlay(self, tab, d):  # play a random card in AMS rules
+            
+        
+    def RandomPlay(self, tab, d):     #play a random card in AMS rules
         playableCards = 0
 
         for c in self.hand:  # first try to flag cards in suit as playable
@@ -139,19 +139,18 @@ class Player:
                 c.isPlayable = True
                 playableCards += 1
 
-        # if none, then try flag trumps as playable (of course checking if playableCards == 0
-        if playableCards == 0:
-            for c in self.hand:  # also implies that trump != leading suit, so that cards are not counted twice)
+        if playableCards == 0:                  #if none, then try flag trumps as playable (of course checking if playableCards == 0
+            for c in self.hand:                 #also implies that trump != leading suit, so that cards are not counted twice)
                 if c.suit == d.trumpSuit:
                     c.isPlayable = True
                     playableCards += 1
 
-        if playableCards == 0:  # otherwise flag any other card
+        if playableCards == 0:                  #otherwise flag any other card
             for c in self.hand:
                 c.isPlayable = True
         self.subHand = [c for c in self.hand if c.isPlayable == True]
         tmp = self.Pop()
-        if self.hand != []:  # after playing the card, all the others are flagged as unplayable before the next trick
+        if self.hand != []:                       #after playing the card, all the others are flagged as unplayable before the next trick
             for c in self.hand:
                 c.isPlayable = False
         return tmp

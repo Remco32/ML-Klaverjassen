@@ -9,6 +9,9 @@ import time
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+import os
+import time
 
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
@@ -82,12 +85,9 @@ def cycle(trainingEpochs, testEpochs, totalCycles):
         #simulate(testingTable, d, trainingEpochs)  # Uncomment to run, WARNING: TAKES A CONSIDERABLE AMOUNT OF TIME
         print('Testing...')
         testing(testingTable, d, testEpochs)
-        print("Cycle " + str(currentCycle+1) +
-              " out of " + str(totalCycles) + " finished\n")
-        remainingTime = (((time.time() - start) / 60) /
-                         (currentCycle+1)) * ((totalCycles+1)-(currentCycle+1))
-        print("Expected time needed remaining cycles: {:.4} min".format(
-            remainingTime))
+        print("Cycle " + str(currentCycle+1)+ " out of " + str(totalCycles) + " finished\n")
+        remainingTime = (((time.time() - start) / 60) / (currentCycle+1)) * ((totalCycles+1)-(currentCycle+1))
+        print("Expected time needed remaining cycles: {:.4} min".format(remainingTime))
 
     printResults(testingTable, trainingEpochs, testEpochs, totalCycles)
 
@@ -107,7 +107,7 @@ def simulate(t, d, trainingEpochs):
             winner = t.WhoWinsTrick(d)
             t.testingScores.append(t.roundScore.copy())
 
-        
+
 
     t.SetPlayerBehaviour(0, "Network") #Back to the original values, as sim.run changes them.
     t.SetPlayerBehaviour(2, "Network")
@@ -119,6 +119,7 @@ def training(t, d, trainingEpochs):
     #    t.LoadState(SAVEFILELIST)
     #elif loadP == 0:
     #    print("Model parameters not loaded")
+
 
     for currentEpoch in range(trainingEpochs):
         #Set experiment information in table
@@ -136,9 +137,9 @@ def training(t, d, trainingEpochs):
             elif t.players[0].testing == True:
                 t.testingScores.append(t.roundScore.copy())
 
-        if currentEpoch % printEpoch == 0:
-            print("Epoch {} of {} \t\t\tElapsed time: {:.4} min".format(
-                currentEpoch, trainingEpochs, (time.time() - start)/60))
+                    
+
+        if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} min".format(currentEpoch, trainingEpochs, (time.time() - start)/60))
     #    if currentEpoch == 100:
     #        t.SaveState(SAVEFOLDER)
     #        print("Saved model parameters")
@@ -150,23 +151,20 @@ def training(t, d, trainingEpochs):
 
 def updateTestingTable(trainingTable, testingTable):
     # Copy the networks for the first team to the testingTable ## copying the players directly won't work
-    for i in (0, 2):
-        # trying to solve the problem by not copyin the players but the model
-        testingTable.players[i].net.load_state_dict(
-            trainingTable.players[i].net.state_dict())
-        # just to be sure, they should be 'Network' by default
-        testingTable.SetPlayerBehaviour(i, 'Network')
+    for i in (0,2):
+        testingTable.players[i].net.load_state_dict(trainingTable.players[i].net.state_dict())     #trying to solve the problem by not copyin the players but the model
+        testingTable.SetPlayerBehaviour(i,'Network')       #just to be sure, they should be 'Network' by default        
 
     # Set second team to random AI
-    for i in (1, 3):
+    for i in (1,3):
         testingTable.SetPlayerBehaviour(i, 'Random')
-
+        
     # Set boolean 'testing' to True for all players
     for p in testingTable.players:
         p.testing = True
 
     # Reset game score
-
+       
     return testingTable
 
 
@@ -177,18 +175,17 @@ def updateTrainingTable(trainingTable):
 
     return trainingTable
 
-
 def testing(updatedTestingTable, d, testingEpochs):
 
     # Reusing old code with new tables and after setting players.testing == True
     training(updatedTestingTable, d, testingEpochs)
 
     updatedTestingTable.calculateTestResults()
-    print('Winrate team 0 this cycle: ' +
-          str(updatedTestingTable.testingWinRatioTeam0[-1]))
     print('Testing completed')
+    print('Winrate team 0 this cycle: ' + str(updatedTestingTable.testingWinRatioTeam0[-1]))
 
 
+    
 def printResults(t, trainingEpochs, testEpochs, totalCycles):
     # the testing scores for the teams, where team 0 is network playing and team 1 is random
     plotDataScores = [[], []]
@@ -202,7 +199,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     #plt.rcParams.update({'font.size': 12})
 
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
-    plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play')
+    plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
     plt.title('Average round scores during testing' + epochString)
     plt.xlabel('Testing cycle')
@@ -227,9 +224,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
 
     currentTime = time.strftime("%Y%m%d-%H%M%S")
     saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
-    plt.savefig(os.path.dirname(__file__) +
-                '/data/' + currentTime + '/figure.png')
-
+    plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure.png')
 
 def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
@@ -243,21 +238,16 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + \
-        str(table.players[0].alpha) + "; discountrate = " + str(table.players[0].y) + \
-        "; explorationrate = " + \
-        str(table.players[0].epsilon) + " Totals:" + epochString
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + " Totals:" + epochString
 
     #TODO save dimensions (layers, amount of nodes) to file as well
-    np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f',
-               delimiter=",",  header=headerString)
+    np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
 
 #print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
-
 start = time.time()
 # The interesting part:
-cycle(100, 100, 30)
+cycle(10000, 100, 30)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
