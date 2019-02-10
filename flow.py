@@ -19,6 +19,9 @@ printEpoch, saveEpoch = 1000, 1000
 # In seconds. For making sure lists and such are filled - filthy dirty workaround (aka a hack)
 pauseTime = 0.1
 
+start = time.time()
+
+
 # Load parameters?
 #loadP = 0 #TODO check if loading works like it should
 #Create folder if needed
@@ -173,6 +176,9 @@ def updateTrainingTable(trainingTable):
     for p in trainingTable.players:
         p.testing = False
 
+    for i in range(4):
+        trainingTable.SetPlayerBehaviour(i, 'Network')
+
     return trainingTable
 
 def testing(updatedTestingTable, d, testingEpochs):
@@ -238,7 +244,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     #plt.show()
     plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure2.png')
 
-    #saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
+    print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
 
 def saveToFile(table, epochString, currentTime, scores, winrateRatio):
@@ -253,16 +259,14 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + " Totals:" + epochString
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
 
-#print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
 
-start = time.time()
 # The interesting part:
-cycle(1000, 100, 10)
+cycle(10000, 100, 10)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8

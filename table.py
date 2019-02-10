@@ -155,7 +155,7 @@ class Table:
                     p.reward += 0.2      #reward good plays to single player
             else:
                 p.reward = -1.
-            p.rewardArray.append(p.reward)
+            #p.rewardArray.append(p.reward)
 
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
 
@@ -199,9 +199,10 @@ class Table:
                 q.append(p.net(P[i]))                              #output from the new state                        
                 Q[i][j] += p.alpha * (p.reward + p.y * torch.max(q[i]).item() - Q[i][j])       #Q-learning formula 
             p.l = p.loss(p.output, Q[i]) #compute loss
-            p.opt.zero_grad()
+            #p.opt.zero_grad()
             p.l.backward()                #do backprop
             p.opt.step()                  #adjust weights after backprop
+            #p.opt.zero_grad()
             ''' This is probably not necessary since the feature vectors are updated in players.Play(), 
                 being built from scratch with the updated information.
             p.feat = P[i].clone()            #update the feature vector
