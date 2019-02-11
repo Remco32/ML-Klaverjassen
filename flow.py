@@ -234,17 +234,17 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     plt.close()
 
     #plt.subplot(122)
-    plt.plot((t.testingTeam0IncrementalWins), '-b', label='Team 0 - network play')
-    plt.plot((t.testingTeam1IncrementalWins), '-r', label='Team 1 - random play')
+    plt.plot((t.testingTeam0TotalWins), '-b', label='Team 0 - network play')
+    plt.plot((t.testingTeam1TotalWins), '-r', label='Team 1 - random play')
     plt.legend()
     plt.title('Won games' + epochString)
-    plt.xlabel('Testing cycle')
-    plt.ylabel('Winrate ratio')
+    plt.xlabel('Testing games played')
+    plt.ylabel('Games won')
     plt.grid()
     #plt.show()
     plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure2.png')
 
-    print("Program terminated! \t\tTotal running time: {:.5} s".format(time.time() - start))
+    print("Program terminated! \t\tTotal running time: {:.5} minutes".format((time.time() - start) /60))
 
 
 def saveToFile(table, epochString, currentTime, scores, winrateRatio):
@@ -266,7 +266,7 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
 
 # The interesting part:
-cycle(10000, 100, 10)
+cycle(100, 100, 5)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8

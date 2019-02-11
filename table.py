@@ -32,12 +32,14 @@ class Table:
         self.testingScores = []      #it will become a 2xN matrix, where N is the number of testing rounds
         self.testingCycleScoresTeam0 = [] #Fills up with the average score of a team for each cycle
         self.testingCycleScoresTeam1 = []
-        self.testingTeam0TotalWins = 0   # To store the total wins during testing
-        self.testingTeam1TotalWins = 0
+        self.testingTeam0WinsThisCycle = 0   # To store the wins during testing cycle
+        self.testingTeam1WinsThisCycle = 0
         self.testingWinRatioTeam0 = []
         self.testingTeam0IncrementalWins = []
         self.testingTeam1IncrementalWins = []
 
+        self.testingTeam0TotalWins = []  # To store the total wins during testing
+        self.testingTeam1TotalWins = []
        
 
 
@@ -162,14 +164,14 @@ class Table:
         # Increment wincount if we are testing
         if self.winnerPlayer.testing:
            if self.winnerPlayer.team == 0:
-               self.testingTeam0TotalWins += 1
-               self.testingTeam0IncrementalWins.append(self.testingTeam0TotalWins)
-               self.testingTeam1IncrementalWins.append(self.testingTeam1TotalWins)
+               self.testingTeam0WinsThisCycle += 1
+               self.testingTeam0IncrementalWins.append(self.testingTeam0WinsThisCycle)
+               self.testingTeam1IncrementalWins.append(self.testingTeam1WinsThisCycle)
 
            else:
-               self.testingTeam1TotalWins += 1
-               self.testingTeam1IncrementalWins.append(self.testingTeam1TotalWins)
-               self.testingTeam0IncrementalWins.append(self.testingTeam0TotalWins)
+               self.testingTeam1WinsThisCycle += 1
+               self.testingTeam1IncrementalWins.append(self.testingTeam1WinsThisCycle)
+               self.testingTeam0IncrementalWins.append(self.testingTeam0WinsThisCycle)
 
 
 
@@ -234,5 +236,16 @@ class Table:
 
         #Calculate winrate
 
-        winRatio = self.testingTeam0TotalWins/(self.testingTeam0TotalWins + self.testingTeam1TotalWins)
+        winRatio = self.testingTeam0WinsThisCycle / (self.testingTeam0WinsThisCycle + self.testingTeam1WinsThisCycle)
+
+        if not self.testingTeam0TotalWins or not self.testingTeam1TotalWins: # Empty lists
+            self.testingTeam0TotalWins.append(self.testingTeam0WinsThisCycle)
+            self.testingTeam1TotalWins.append(self.testingTeam1WinsThisCycle)
+        else: # Append the cumulative wins
+            self.testingTeam0TotalWins.append(self.testingTeam0WinsThisCycle + self.testingTeam0TotalWins[-1])
+            self.testingTeam1TotalWins.append(self.testingTeam1WinsThisCycle + self.testingTeam1TotalWins[-1])
+
+        self.testingTeam0WinsThisCycle = 0
+        self.testingTeam1WinsThisCycle = 0
+
         self.testingWinRatioTeam0.append(winRatio)
