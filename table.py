@@ -187,7 +187,7 @@ class Table:
         with torch.no_grad():
 
             Plist = [f.feat.clone() for f in self.orderedPlayers]
-            P = [torch.tensor(Pl, dtype=torch.float) for Pl in Plist]     #clone the feature vectors to delete played card for next move
+            P = [Pl.clone() for Pl in Plist]     #clone the feature vectors to delete played card for next move
                 
             for i,feat_vec in enumerate(P):     #for every player's features
                 for j,c in enumerate(feat_vec):         #for every card in the feature vector
