@@ -40,6 +40,8 @@ class Table:
 
         self.testingTeam0TotalWins = []  # To store the total wins during testing
         self.testingTeam1TotalWins = []
+
+        self.oldDiscountRate = y
        
 
 
@@ -125,6 +127,7 @@ class Table:
     and reward -1 to the losing team.
     """    
     def WhoWinsTrick(self, d):    #d is the deck object
+
         trickPoints = 0
         self.winValue = 0
         self.playedTrump = False
@@ -152,15 +155,17 @@ class Table:
         self.roundScore[self.winnerPlayer.team] += trickPoints    #trick points assignment
         for p in self.players:
             if p.team == self.winnerPlayer.team:
-                p.reward = 1.
-                if p == self.winnerPlayer:
-                    p.reward += 0.2      #reward good plays to single player
+                p.reward = 1.0 + 8 - len(p.hand)
+                #if p == self.winnerPlayer:
+                #    p.reward += 0.2      #reward good plays to single player
             else:
-                p.reward = -1.
+                p.reward = -1.0 - (8 - len(p.hand))
             #p.rewardArray.append(p.reward)
 
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner
 
+
+        """
         # Increment wincount if we are testing
         if self.winnerPlayer.testing:
            if self.winnerPlayer.team == 0:
@@ -173,21 +178,64 @@ class Table:
                self.testingTeam1IncrementalWins.append(self.testingTeam1WinsThisCycle)
                self.testingTeam0IncrementalWins.append(self.testingTeam0WinsThisCycle)
 
+        """
+        """
+        # If dealing player has one card: set discount rate to 0 and apply reward
+        if len(self.players[self.dealer].hand) == 1:
+            for p in self.players:
+                # Set discount rate to 0
+                #p.y = 0
+                if p.team == self.winnerPlayer.team:
+                    p.reward = 10
+                else:
+                    p.reward = -10
+        """
 
 
-
-        if self.players[0].hand == []:
+        # End of round
+        if self.checkEmptyHands():
             self.roundScore[self.winnerPlayer.team] += 10
+
+            if self.winnerPlayer.testing:
+                if self.winnerPlayer.team == 0:
+                    self.testingTeam0WinsThisCycle += 1
+                    self.testingTeam0IncrementalWins.append(self.testingTeam0WinsThisCycle)
+                    self.testingTeam1IncrementalWins.append(self.testingTeam1WinsThisCycle)
+
+                else:
+                    self.testingTeam1WinsThisCycle += 1
+                    self.testingTeam1IncrementalWins.append(self.testingTeam1WinsThisCycle)
+                    self.testingTeam0IncrementalWins.append(self.testingTeam0WinsThisCycle)
+            """
+            #Set discount rate back
+            for p in self.players:
+                p.y = self.oldDiscountRate
             
+            for p in self.players:
+                if p.team == self.winnerPlayer.team:
+                    p.reward = 10
+                else:
+                    p.reward = -10
+            """
+            # For exploration
+            if not self.players[0].testing:
+                self.currentEpoch += 1
         
         return self.winnerPlayer
 
+    #Check if all the players played their cards
+    def checkEmptyHands(self):
+
+        if (len(self.players[0].hand) == 0 and len(self.players[1].hand) == 0
+                and len(self.players[2].hand) == 0 and len(self.players[3].hand) == 0):
+            return True
+        return False
 
     def DoBackprop(self):
         with torch.no_grad():
 
             Plist = [f.feat.clone() for f in self.orderedPlayers]
-            P = [Pl.clone() for Pl in Plist]     #clone the feature vectors to delete played card for next move
+            P = [Pl.clone() for Pl in Plist]  # clone the feature vectors to delete played card for next move
                 
             for i,feat_vec in enumerate(P):     #for every player's features
                 for j,c in enumerate(feat_vec):         #for every card in the feature vector
@@ -201,7 +249,7 @@ class Table:
                 q.append(p.net(P[i]))                              #output from the new state                        
                 Q[i][j] += p.alpha * (p.reward + p.y * torch.max(q[i]).item() - Q[i][j])       #Q-learning formula 
             p.l = p.loss(p.output, Q[i]) #compute loss
-            #p.opt.zero_grad()
+            p.opt.zero_grad()
             p.l.backward()                #do backprop
             p.opt.step()                  #adjust weights after backprop
             #p.opt.zero_grad()
@@ -221,14 +269,16 @@ class Table:
         # Convert to an array
         array = np.array(self.testingScores, dtype='int')
 
+        #Calculate scores for end of rounds
         scoreTeam0 = 0
         scoreTeam1 = 0
         j = 0
 
         for i in range(len(self.testingScores)):
+
             if i % 8 == 7: # Only use the final score of a round
-                scoreTeam0 += array[i,0]
                 scoreTeam1 += array[i,1]
+                scoreTeam0 += array[i,0]
                 j += 1
 
         self.testingCycleScoresTeam0.append(scoreTeam0/j)

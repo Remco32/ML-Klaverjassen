@@ -16,9 +16,6 @@ import time
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
 printEpoch, saveEpoch = 1000, 1000
-# In seconds. For making sure lists and such are filled - filthy dirty workaround (aka a hack)
-pauseTime = 0.1
-
 start = time.time()
 
 
@@ -60,18 +57,16 @@ Multiple rounds in the game to properly train the network. Same as above, repeat
 # i.e. 1000 training epochs, 100 test epochs, repeat for 100 loops (cycles).
 
 
-def cycle(trainingEpochs, testEpochs, totalCycles):
+def cycle(trainingEpochs, testEpochs, totalCycles, learningRate, discountFactor):
     #Create table and deck for training
-    trainingTable = table.Table(16, 0.01, 0.9)
+    trainingTable = table.Table(16, learningRate, discountFactor)
     # Set total epochs in table #TODO might be redundant now
-    trainingTable.maximumEpoch = trainingEpochs
+    trainingTable.maximumEpoch = trainingEpochs * totalCycles
     d = deck.Deck()
 
     # create separate table for testing (since it requires an AI team vs. a random team). Also requires player.testing to be set to 'True'. And, most importantly, needs the player objects from the trainingTable
-    testingTable = table.Table(16, 0.01, 0.9)
+    testingTable = table.Table(16, learningRate, discountFactor)
 
-    #TODO: This is a workaround for a bug caused by untested code being pushed
-    #training(trainingTable, d, 1)
     # First test for baseline
     # No need to use the training table since it hasn't trained yet
     testingTable = updateTestingTable(trainingTable, testingTable)
@@ -166,7 +161,6 @@ def updateTestingTable(trainingTable, testingTable):
     for p in testingTable.players:
         p.testing = True
 
-    # Reset game score
        
     return testingTable
 
@@ -178,6 +172,15 @@ def updateTrainingTable(trainingTable):
 
     for i in range(4):
         trainingTable.SetPlayerBehaviour(i, 'Network')
+    #Set opponents to the previous iteration of the network, but don't train this network.
+
+    trainingTable.players[1].net.load_state_dict(trainingTable.players[0].net.state_dict())  # trying to solve the problem by not copyin the players but the model
+    trainingTable.players[3].net.load_state_dict(trainingTable.players[
+                                                     2].net.state_dict())
+    trainingTable.players[1].testing = True #No training or exploration
+    trainingTable.players[3].testing = True
+
+    #trainingTable.currentEpoch = 0
 
     return trainingTable
 
@@ -188,28 +191,37 @@ def testing(updatedTestingTable, d, testingEpochs):
 
     updatedTestingTable.calculateTestResults()
     print('Testing completed')
-    print('Winrate team 0 this cycle: ' + str(updatedTestingTable.testingWinRatioTeam0[-1]))
+    print('>>>Winrate team 0 this cycle: ' + str(updatedTestingTable.testingWinRatioTeam0[-1]))
 
 
     
 def printResults(t, trainingEpochs, testEpochs, totalCycles):
+    epochString = "\n Totals: Traningepochs=" + str(totalCycles * trainingEpochs) + " Testingepochs=" + str(
+        totalCycles * testEpochs)
+    # epochString = ''
+
+    currentTime = time.strftime("%Y%m%d-%H%M%S")
+    """
+    SAVEFOLDER = os.path.dirname(__file__) + '/data/' + currentTime
+
+    if not os.path.exists(SAVEFOLDER):
+        os.makedirs(SAVEFOLDER)
+    """
     # the testing scores for the teams, where team 0 is network playing and team 1 is random
     plotDataScores = [[], []]
     for i in range(len(t.testingCycleScoresTeam0)):
         plotDataScores[0].append(t.testingCycleScoresTeam0[i])
         plotDataScores[1].append(t.testingCycleScoresTeam1[i])
 
-    epochString = "\n Totals: Traningepochs=" + str(totalCycles*trainingEpochs) + " Testingepochs=" + str(totalCycles*testEpochs)
-    #epochString = ''
-    currentTime = time.strftime("%Y%m%d-%H%M%S")
+
 
     plt.subplot(121)
     #plt.rcParams.update({'font.size': 12})
 
     plt.plot((plotDataScores[0]), '-b', label='Team 0 - network play')
-    plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
+    #plt.plot((plotDataScores[1]), '-r', label='Team 1 - random play' )
     plt.legend()
-    plt.title('Average round scores during testing') # + epochString)
+    plt.title('Average final round scores') # + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Team scores')
     plt.grid()
@@ -222,9 +234,10 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
         plotDataWinratios[1].append(1-t.testingWinRatioTeam0[i])
 
     plt.plot((plotDataWinratios[0]), '-b', label='Team 0 - network play')
-    plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
+    #plt.plot((plotDataWinratios[1]), '-r', label='Team 1 - random play')
     plt.legend()
-    plt.title('Winrate both teams') # + epochString)
+    #plt.title('Winrate both teams') # + epochString)
+    plt.title('Winrate')  # + epochString)
     plt.xlabel('Testing cycle')
     plt.ylabel('Winrate ratio')
     plt.grid()
@@ -244,6 +257,8 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     #plt.show()
     plt.savefig(os.path.dirname(__file__) + '/data/' + currentTime + '/figure2.png')
 
+    saveToFile(t, epochString, currentTime, plotDataScores, plotDataWinratios)
+
     print("Program terminated! \t\tTotal running time: {:.5} minutes".format((time.time() - start) /60))
 
 
@@ -259,14 +274,14 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString + "\nNetwork: " + str(table.players[0].net)
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
 
 
 # The interesting part:
-cycle(100, 100, 5)
+cycle(100, 100, 5, 0.00001, 0.6)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
