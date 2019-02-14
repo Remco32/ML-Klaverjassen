@@ -15,7 +15,7 @@ import time
 
 
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
-printEpoch, saveEpoch = 1000, 1000
+printEpoch, saveEpoch = 10000, 1000
 start = time.time()
 
 
@@ -174,13 +174,19 @@ def updateTrainingTable(trainingTable):
         trainingTable.SetPlayerBehaviour(i, 'Network')
     #Set opponents to the previous iteration of the network, but don't train this network.
 
-    trainingTable.players[1].net.load_state_dict(trainingTable.players[0].net.state_dict())  # trying to solve the problem by not copyin the players but the model
-    trainingTable.players[3].net.load_state_dict(trainingTable.players[
-                                                     2].net.state_dict())
-    trainingTable.players[1].testing = True #No training or exploration
-    trainingTable.players[3].testing = True
+    if SELFPLAY_OPPONENTS:
+        trainingTable.players[1].net.load_state_dict(trainingTable.players[0].net.state_dict())  # trying to solve the problem by not copyin the players but the model
+        trainingTable.players[3].net.load_state_dict(trainingTable.players[2].net.state_dict())
+        trainingTable.players[1].testing = True # No training or exploration
+        trainingTable.players[3].testing = True
 
-    #trainingTable.currentEpoch = 0
+    """
+    # Broken due to how backprop is implemented...
+    if RANDOM_OPPONENTS:
+        trainingTable.SetPlayerBehaviour(1, 'Random')
+        trainingTable.SetPlayerBehaviour(3, 'Random')
+
+    """
 
     return trainingTable
 
@@ -191,7 +197,13 @@ def testing(updatedTestingTable, d, testingEpochs):
 
     updatedTestingTable.calculateTestResults()
     print('Testing completed')
-    print('>>>Winrate team 0 this cycle: ' + str(updatedTestingTable.testingWinRatioTeam0[-1]))
+    print('>>>Winrate (this cycle/mean/max): ' + str(updatedTestingTable.testingWinRatioTeam0[-1]) + " / " +
+                                                   str(np.mean(updatedTestingTable.testingWinRatioTeam0)) +
+                                                   " / " + str(np.max(updatedTestingTable.testingWinRatioTeam0))
+          + ' ; Score (this cycle/mean/max): ' + str(updatedTestingTable.testingCycleScoresTeam0[-1]) + " / " +
+                                                str(np.mean(updatedTestingTable.testingCycleScoresTeam0)) +
+                                             " / " + str(np.max(updatedTestingTable.testingCycleScoresTeam0)))
+
 
 
     
@@ -199,6 +211,7 @@ def printResults(t, trainingEpochs, testEpochs, totalCycles):
     epochString = "\n Totals: Traningepochs=" + str(totalCycles * trainingEpochs) + " Testingepochs=" + str(
         totalCycles * testEpochs)
     # epochString = ''
+
 
     currentTime = time.strftime("%Y%m%d-%H%M%S")
     """
@@ -274,14 +287,23 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 
     data = np.concatenate((np.array(scores), np.array(winrateRatio)))
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + epochString + "\nNetwork: " + str(table.players[0].net)
+    opponentTypeString = ""
+    #if RANDOM_OPPONENTS:
+    #    opponentTypeString = "Random play training opponent"
+    if SELFPLAY_OPPONENTS:
+        opponentTypeString = "Previous iteration network as training opponent"
+
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + "Opponent type: " + opponentTypeString + epochString + "\nNetwork: " + str(table.players[0].net)
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
 
-
+#DEBUG = True
 # The interesting part:
-cycle(100, 100, 5, 0.00001, 0.6)
+SELFPLAY_OPPONENTS = True
+#TODO min/max/mean at print
+#RANDOM_OPPONENTS = False #Broken
+cycle(500, 100, 10, 0.001, 0.9)
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8
