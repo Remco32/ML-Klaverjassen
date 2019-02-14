@@ -234,6 +234,7 @@ class Table:
         return False
 
     def DoBackprop(self):
+        
         with torch.no_grad():
 
             Plist = [f.feat.clone() for f in self.orderedPlayers]
@@ -245,21 +246,17 @@ class Table:
                         feat_vec[card_index] = 0                #set the value to 0
             new_state_Q = []
             updated_Q = [p.output.clone() for p in self.orderedPlayers]    #clone of the output
+            
         for player_index,player in enumerate(self.orderedPlayers):                #check simple3.py for reference
             played_card_index = self.playedCards[player_index].index
             with torch.no_grad():
                 new_state_Q.append(player.net(P[player_index]))                              #output from the new state                        
-                updated_Q[player_index][played_card_index] += player.alpha * (player.reward + player.y * torch.max(new_state_Q[player_index]).item() - updated_Q[player_index][played_card_index])       #Q-learning formula 
+                updated_Q[player_index][played_card_index] += player.alpha * (player.reward + player.y * player.FindAllowedMaximum(P[player_index]) - updated_Q[player_index][played_card_index])       #Q-learning formula 
             player.computed_loss = player.loss(player.output, updated_Q[player_index]) #compute loss
             player.opt.zero_grad()
             player.computed_loss.backward()                #do backprop
             player.opt.step()                  #adjust weights after backprop
             #p.opt.zero_grad()
-            ''' This is probably not necessary since the feature vectors are updated in players.Play(), 
-                being built from scratch with the updated information.
-            p.feat = P[player_index].clone()            #update the feature vector
-            p.feat.requires_grad = True
-            '''
 
     
     def whoWinsRound(self):

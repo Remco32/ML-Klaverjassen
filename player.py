@@ -107,9 +107,9 @@ class Player:
                     for card in self.subHand:
                         if card.index == i:
                             self.idPlayable.append(i)
-        self.output = self.net(self.feat)
+       # self.output = self.net(self.feat)  #moved inside FindAllowedMaximum to allow calling that independently
 
-        idP = self.FindAllowedMaximum()  # BIG CHANGE: NO BACKPROP FOR ILLEGAL MOVES
+        idP = self.FindAllowedMaximum(self.feat)  # CHANGE
         #Only changes the value for idP if an exploration step is taken, else uses idP given as the first argument
         if self.testing == False:
             idP = expl.diminishingEpsilonGreedy(idP, self.epsilon, self.idPlayable, tbl.currentEpoch, tbl.maximumEpoch)
@@ -118,7 +118,8 @@ class Player:
                 cc = c
         return cc, idP
 
-    def FindAllowedMaximum(self):
+    def FindAllowedMaximum(self, feat):   
+        self.output = self.net(feat)
         with torch.no_grad():
             outFeat = self.output.clone().detach().numpy().tolist() #create a list
         outFeatSorted = sorted(outFeat, reverse=True)  #sort it in descending order
