@@ -251,7 +251,7 @@ class Table:
             played_card_index = self.playedCards[player_index].index
             #with torch.no_grad():
             new_state_Q.append(player.net(P[player_index]))                              #output from the new state                        
-            updated_Q[player_index][played_card_index] += player.alpha * (player.reward + player.y * player.FindAllowedMaximum(P[player_index]) - updated_Q[player_index][played_card_index])       #Q-learning formula 
+            updated_Q[player_index][played_card_index] += player.alpha * (player.reward + player.y * new_state_Q[player_index][player.FindAllowedMaximum(P[player_index])] - updated_Q[player_index][played_card_index])       #Q-learning formula 
             player.computed_loss = player.loss(player.output, updated_Q[player_index]) #compute loss
             player.opt.zero_grad()
             player.computed_loss.backward()                #do backprop
