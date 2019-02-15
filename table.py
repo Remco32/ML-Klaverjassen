@@ -159,8 +159,8 @@ class Table:
                 # p.reward = 1.0 + 8 - len(p.hand)
                 #p.reward = p.played.value
                 #p.reward = p.played.value + 20 + 1
-                #if p == self.winnerPlayer:
-                #    p.reward += 0.2      #reward good plays to single player
+                if p == self.winnerPlayer:
+                    p.reward += 0.2      #reward good plays to single player
             else:
                 p.reward = -1
                 #p.reward = -1.0 - (8 - len(p.hand))
