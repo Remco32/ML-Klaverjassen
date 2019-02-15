@@ -17,6 +17,7 @@ import time
 #trainingEpochs, printEpoch, saveEpoch = 1000, 100, 10
 printEpoch, saveEpoch = 10000, 1000
 start = time.time()
+COMMENT_STRING = ""
 
 
 # Load parameters?
@@ -135,7 +136,7 @@ def training(t, d, trainingEpochs):
             elif t.players[0].testing == True:
                 t.testingScores.append(t.roundScore.copy())
 
-                    
+
 
         if currentEpoch % printEpoch == 0: print("Epoch {} of {} \t\t\tElapsed time: {:.4} min".format(currentEpoch, trainingEpochs, (time.time() - start)/60))
     #    if currentEpoch == 100:
@@ -293,7 +294,7 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
     if SELFPLAY_OPPONENTS:
         opponentTypeString = "Previous iteration network as training opponent"
 
-    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + "Opponent type: " + opponentTypeString + epochString + "\nNetwork: " + str(table.players[0].net)
+    headerString = "Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1\nHyperparameters: learningrate = " + str(table.players[0].alpha)+ "; discountrate = " + str(table.players[0].y) + "; explorationrate = " + str(table.players[0].epsilon) + "Opponent type: " + opponentTypeString + epochString + "\nNetwork: " + str(table.players[0].net) + "\nComments:" + str(COMMENT_STRING)
 
     #TODO save dimensions (layers, amount of nodes) to file as well
     np.savetxt(SAVEFOLDER + "/data.csv", data, fmt='%2f', delimiter=",",  header=headerString)
@@ -301,9 +302,11 @@ def saveToFile(table, epochString, currentTime, scores, winrateRatio):
 #DEBUG = True
 # The interesting part:
 SELFPLAY_OPPONENTS = True
-#TODO min/max/mean at print
+#COMMENT_STRING = "reward = +/-points + trick{+20+1; -20}"
+
 #RANDOM_OPPONENTS = False #Broken
-cycle(500, 100, 10, 0.001, 0.9)
+cycle(10000, 100, 100, 0.0001, 0.9)
+
 
 
 # https://www.google.com/search?q=ValueError%3A+list.remove(x)%3A+x+not+in+list&oq=ValueError%3A+list.remove(x)%3A+x+not+in+list&aqs=chrome..69i57j69i58.286j0j1&sourceid=chrome&ie=UTF-8

@@ -155,13 +155,17 @@ class Table:
         self.roundScore[self.winnerPlayer.team] += trickPoints    #trick points assignment
         for p in self.players:
             if p.team == self.winnerPlayer.team:
+                p.reward = 1
                 # p.reward = 1.0 + 8 - len(p.hand)
-                p.reward = p.played.value
+                #p.reward = p.played.value
+                #p.reward = p.played.value + 20 + 1
                 #if p == self.winnerPlayer:
                 #    p.reward += 0.2      #reward good plays to single player
             else:
+                p.reward = -1
                 #p.reward = -1.0 - (8 - len(p.hand))
-                p.reward = min(-p.played.value / 2, -1) # Zero sum game, but might not be so smart to have a zero sum reward
+                #p.reward = min(-p.played.value / 2, -1) # Zero sum game, but might not be so smart to have a zero sum reward
+                #p.reward = -p.played.value + -20
             #p.rewardArray.append(p.reward)
 
         self.Order(self.winnerPlayerID)                           #the game starts from the trick winner

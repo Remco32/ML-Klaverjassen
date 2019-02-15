@@ -1,0 +1,3 @@
+# Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1
+# Hyperparameters: learningrate = 1e-05; discountrate = 0.6; explorationrate = 0.3
+#  Totals: Traningepochs=2000 Testingepochs=200

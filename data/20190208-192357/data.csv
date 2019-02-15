@@ -1,0 +1,6 @@
+# Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1
+# Hyperparameters: learningrate = 0.01; discountrate = 0.9; explorationrate = 0.3 Totals:
+77.570000,81.530000,83.233333
+84.430000,80.470000,78.766667
+0.478750,0.492500,0.506667
+0.521250,0.507500,0.493333

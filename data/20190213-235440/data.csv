@@ -1,0 +1,11 @@
+# Data in order of lines: Average scores team 0 for each cycle, Score team 1, winrate team 0, winrate team 1
+# Hyperparameters: learningrate = 1e-05; discountrate = 0.9; explorationrate = 0.3Opponent type: Previous iteration network as training opponent
+#  Totals: Traningepochs=10000 Testingepochs=1000
+# Network: Net(
+#   (conn1): Linear(in_features=97, out_features=150, bias=True)
+#   (conn5): Linear(in_features=150, out_features=32, bias=True)
+# )
+87.910000,84.960000,82.673333,82.610000,82.792000,82.598333,82.717143,82.380000,81.728889,81.895000,81.865455
+74.090000,77.040000,79.326667,79.390000,79.208000,79.401667,79.282857,79.620000,80.271111,80.105000,80.134545
+0.530000,0.560000,0.500000,0.560000,0.460000,0.520000,0.500000,0.480000,0.430000,0.470000,0.580000
+0.470000,0.440000,0.500000,0.440000,0.540000,0.480000,0.500000,0.520000,0.570000,0.530000,0.420000

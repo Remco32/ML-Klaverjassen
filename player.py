@@ -97,7 +97,7 @@ class Player:
             self.hand.remove(self.played)
         return self.played  # self.played is assigned within each of the play methods below
 
-    def NetPlay(self, tbl, dck):
+    def NetPlay(self, tbl):
         # (Possibly) Fixes assignment error breaking the program after many iterations
         global cc
         self.idPlayable = []
@@ -175,7 +175,7 @@ class Player:
             for c in self.hand:
                 c.isPlayable = True
         self.subHand = [c for c in self.hand if c.isPlayable == True]
-        tmp = self.NetPlay(tab, d)
+        tmp = self.NetPlay(tab)
         #self.played = tmp[0]
         #self.playedID =tmp[1]
         if self.hand != []:  # after playing the card, all the others are flagged as unplayable before the next trick
